@@ -1,30 +1,85 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../providers/device_provider.dart';
 
 import 'widgets/greeting_section.dart';
 import 'widgets/weather_card.dart';
 import 'widgets/status_card.dart';
 import 'widgets/device_card.dart';
+import 'widgets/pump_card.dart';
 
-class HomeScreen extends StatelessWidget {
+import 'widgets/search_bar_widget.dart';
+import 'widgets/filter_chips.dart';
+
+import '../device_details/device_details_screen.dart';
+
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+
+  @override
+  void initState() {
+    super.initState();
+
+    Future.microtask(() async {
+      final provider = Provider.of<DeviceProvider>(
+        context,
+        listen: false,
+      );
+
+      await provider.fetchDevices();
+
+      await provider.fetchPumpStatus();
+
+      provider.startPumpPolling();
+    });
+  }
+
+  @override
+  void dispose() {
+    Provider.of<DeviceProvider>(
+      context,
+      listen: false,
+    ).stopPumpPolling();
+
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+
+    final deviceProvider =
+    Provider.of<DeviceProvider>(context);
+
+    final displayDevices = deviceProvider.devices
+        .where((device) => device.id != "R8")
+        .toList();
+
     return Scaffold(
+
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.primary,
-        onPressed: ( ){},
+        onPressed: () {},
         child: const Icon(Icons.add),
       ),
 
       body: SafeArea(
+
         child: SingleChildScrollView(
+
           padding: const EdgeInsets.all(20),
 
           child: Column(
+
             children: [
+
               const GreetingSection(),
 
               const SizedBox(height: 25),
@@ -34,24 +89,29 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 25),
 
               Row(
-                children: const [
+
+                children: [
+
                   StatusCard(
-                      title: "Online",
-                      value: "8",
-                      icon: Icons.wifi,
+                    title: "Online",
+                    value: deviceProvider.onlineDevices.toString(),
+                    icon: Icons.wifi,
                   ),
 
                   StatusCard(
                     title: "Active",
-                    value: "5",
+                    value: deviceProvider.activeDevices.toString(),
                     icon: Icons.flash_on,
                   ),
 
                 ],
+
               ),
 
               Row(
+
                 children: const [
+
                   StatusCard(
                     title: "Energy",
                     value: "12kwh",
@@ -65,73 +125,172 @@ class HomeScreen extends StatelessWidget {
                   ),
 
                 ],
+
               ),
 
               const SizedBox(height: 25),
 
-              GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                crossAxisSpacing: 15,
-                mainAxisSpacing: 15,
-                childAspectRatio: 0.85,
+              PumpCard(
 
-                children: const [
-                  DeviceCard(
-                      deviceName: "Living Light",
-                      icon: Icons.lightbulb,
-                      isOn: true
-                  ),
+                isRunning: deviceProvider.pumpRunning,
 
-                  DeviceCard(
-                    deviceName: "Fan",
-                    icon: Icons.air,
-                    isOn: true,
-                  ),
+                selectedMinutes:
+                deviceProvider.selectedPumpMinutes,
 
-                  DeviceCard(
-                    deviceName: "Television",
-                    icon: Icons.tv,
-                    isOn: true,
-                  ),
+                remainingTime:
+                deviceProvider.formattedRemainingTime,
 
-                  DeviceCard(
-                    deviceName: "AC Inverter",
-                    icon: Icons.ac_unit,
-                    isOn: true,
-                  ),
+                onDurationChanged: (value) {
 
-                  DeviceCard(
-                    deviceName: "Gallery Light",
-                    icon: Icons.lightbulb,
-                    isOn: false,
-                  ),
+                  if (value != null) {
 
-                  DeviceCard(
-                    deviceName: "Room1 Fan",
-                    icon: Icons.air,
-                    isOn: false,
-                  ),
+                    deviceProvider.changePumpDuration(value);
 
-                  DeviceCard(
-                    deviceName: "Main Gate",
-                    icon: Icons.sensor_door_outlined,
-                    isOn: true,
-                  ),
+                  }
 
-                  DeviceCard(
-                    deviceName: "Water Pump",
-                    icon: Icons.heat_pump_sharp,
-                    isOn: true,
-                  ),
-                ],
+                },
+
+                onStart: () {
+
+                  deviceProvider.startPump();
+
+                },
+
+                onStop: () {
+
+                  deviceProvider.stopPump();
+
+                },
+
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
 
+              const SizedBox(height: 25),
+
+
+              SearchBarWidget(
+
+                onChanged: (value) {
+
+                  deviceProvider.updateSearch(value);
+
+                },
+
+              ),
+
+              const SizedBox(height: 15),
+
+              FilterChips(
+
+                selected: deviceProvider.selectedFilter,
+
+                onSelected: (type) {
+
+                  deviceProvider.updateFilter(type);
+
+                },
+
+              ),
+
+
+
+              const SizedBox(height: 25),
+
+              GridView.builder(
+
+                shrinkWrap: true,
+
+                physics: const NeverScrollableScrollPhysics(),
+
+                itemCount: deviceProvider.filteredDevices.length,
+
+                gridDelegate:
+                const SliverGridDelegateWithFixedCrossAxisCount(
+
+                  crossAxisCount: 2,
+
+                  crossAxisSpacing: 15,
+
+                  mainAxisSpacing: 15,
+
+                  childAspectRatio: 0.72,
+
+                ),
+
+                itemBuilder: (context, index) {
+
+                  final device = deviceProvider.filteredDevices[index];
+
+                  return DeviceCard(
+
+                    deviceName: device.name,
+
+                    icon: _getIcon(device.iconName),
+
+                    isOn: device.isOn,
+
+                    onToggle: () {
+
+                      deviceProvider.toggleDevice(device);
+
+                    },
+
+                    onTap: () {
+
+                      Navigator.push(
+
+                        context,
+
+                        MaterialPageRoute(
+
+                          builder: (_) => DeviceDetailsScreen(
+                            device: device,
+                          ),
+
+                        ),
+
+                      );
+
+                    },
+
+                  );
+
+                },
+
+              ),
+
+            ],
+
+          ),
+
+        ),
+
+      ),
+
+    );
+
+  }
+
+  IconData _getIcon(String iconName) {
+
+    switch (iconName) {
+
+      case "lightbulb":
+        return Icons.lightbulb;
+
+      case "fan":
+        return Icons.air;
+
+      case "pump":
+        return Icons.water_drop;
+
+      case "alarm":
+        return Icons.security;
+
+      default:
+        return Icons.devices;
+
+    }
+
+  }
+
+}

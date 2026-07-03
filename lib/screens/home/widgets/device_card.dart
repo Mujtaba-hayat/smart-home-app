@@ -5,63 +5,75 @@ class DeviceCard extends StatelessWidget {
   final String deviceName;
   final IconData icon;
   final bool isOn;
+  final VoidCallback onToggle;
+  final VoidCallback onTap;
 
   const DeviceCard({
     super.key,
     required this.deviceName,
     required this.icon,
     required this.isOn,
+    required this.onToggle,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
+    return InkWell(
+        borderRadius: BorderRadius.circular(24),
+
+        onTap: onTap,
+        child: Container(
+      padding: const EdgeInsets.all(16),
 
       decoration: BoxDecoration(
         color: AppColors.cardColor,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(22),
       ),
 
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
 
         children: [
+
           Align(
             alignment: Alignment.topRight,
-
             child: Switch(
-                value: isOn,
-                onChanged: (_){},
-
+              value: isOn,
+              onChanged: (_) => onToggle(),
             ),
           ),
 
-          const Spacer(),
+          const SizedBox(height: 8),
 
-          Icon(
-            icon,
-            size: 42,
-            color: isOn
-              ?AppColors.accent
-                :AppColors.textSecondary,
+          Center(
+            child: Icon(
+              icon,
+              size: 42,
+              color: isOn
+                  ? AppColors.accent
+                  : AppColors.textSecondary,
+            ),
           ),
 
-          const SizedBox(height: 15,),
+          const SizedBox(height: 16),
 
           Text(
             deviceName,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
           ),
 
-          const SizedBox(height: 5,),
+          const SizedBox(height: 6),
 
           Text(
             isOn ? "ON" : "OFF",
             style: TextStyle(
+              fontSize: 14,
               color: isOn
                   ? AppColors.accent
                   : AppColors.textSecondary,
@@ -69,6 +81,6 @@ class DeviceCard extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ),);
   }
 }

@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../../core/theme/app_colors.dart';
+import '../../providers/device_provider.dart';
+import '../../data/room_data.dart';
+
+import '../room_details/room_details_screen.dart';
+
 import 'widgets/room_card.dart';
 
 class RoomsScreen extends StatelessWidget {
@@ -9,83 +14,68 @@ class RoomsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    final rooms =[
-      {
-        "name": "Living Room",
-        "devices": 5,
-        "active": 3,
-        "icon": Icons.weekend,
-      },
+    final deviceProvider =
+    Provider.of<DeviceProvider>(context);
 
-      {
-        "name": "Bedroom",
-        "devices": 4,
-        "active": 2,
-        "icon": Icons.bed,
-      },
+    // Remove Water System room from the list
+    final displayRooms = roomList
+        .where((room) => room.name != "Water System")
+        .toList();
 
-      {
-        "name": "Kitchen",
-        "devices": 6,
-        "active": 4,
-        "icon": Icons.kitchen,
-      },
-
-      {
-        "name": "Garage",
-        "devices": 3,
-        "active": 1,
-        "icon": Icons.garage,
-      },
-
-      {
-        "name": "Office",
-        "devices": 7,
-        "active": 5,
-        "icon": Icons.computer,
-      },
-
-      {
-        "name": "Bathroom",
-        "devices": 2,
-        "active": 1,
-        "icon": Icons.bathtub,
-      },
-
-    ];
     return Scaffold(
+
       appBar: AppBar(
-        title:  Text("Rooms"),
+        title: const Text("Rooms"),
       ),
 
       body: Padding(
-        padding: const EdgeInsetsGeometry.all(20),
+
+        padding: const EdgeInsets.all(20),
 
         child: GridView.builder(
-          itemCount: rooms.length,
+
+          itemCount: displayRooms.length,
 
           gridDelegate:
-            const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
+          const SliverGridDelegateWithFixedCrossAxisCount(
 
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
+            crossAxisCount: 2,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 0.85,
 
-              childAspectRatio: 0.85,
-            ),
+          ),
 
-          itemBuilder: (context, index){
-            final room = rooms[index];
+          itemBuilder: (context, index) {
+
+            final room = displayRooms[index];
 
             return RoomCard(
-                roomName: room["name"] as String,
-                devices: room["devices"] as int,
-                activeDevice: room["active"] as int,
-                icon: room["icon"] as IconData,
+              roomName: room.name,
+              devices: deviceProvider.getDeviceCount(room.name),
+              activeDevice: deviceProvider.getActiveDeviceCount(room.name),
+              icon: room.icon,
+
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => RoomDetailsScreen(
+                      room: room,
+                    ),
+                  ),
+                );
+              },
             );
+
           },
+
         ),
+
       ),
+
     );
+
   }
+
 }

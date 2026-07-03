@@ -1,13 +1,14 @@
-class RoomModel{
-  final String name;
-  final int devices;
-  final int activeDevices;
-  final String image;
+import 'package:flutter/material.dart';
 
-  RoomModel({
+class RoomModel {
+
+  final String name;
+
+  final IconData icon;
+
+  const RoomModel({
     required this.name,
-    required this.devices,
-    required this.activeDevices,
-    required this.image,
-});
+    required this.icon,
+  });
+
 }
