@@ -101,6 +101,27 @@ class DeviceProvider extends ChangeNotifier {
   int get onlineDevices => devices.length;
 
   //====================================================
+  // Loading & Error State
+  //====================================================
+
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
+
+
+  void _setLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
+
+  void _setError(String? message){
+    _errorMessage = message;
+    notifyListeners();
+  }
+
+  //====================================================
   // Pump State
   //====================================================
 
@@ -199,17 +220,26 @@ class DeviceProvider extends ChangeNotifier {
   //====================================================
 
   Future<void> fetchDevices() async {
+
+    _setLoading(true);
+
+    _setError(null);
+
     try {
+
       final data = await ApiService.getDevices();
 
       for (var device in devices) {
         device.isOn = data[device.id] == "ON";
       }
 
-      notifyListeners();
     } catch (e) {
-      debugPrint("Fetch Error: $e");
+
+      _setError("Unable to connect to the server.");
+
     }
+
+    _setLoading(false);
   }
 
   //====================================================
@@ -253,7 +283,9 @@ class DeviceProvider extends ChangeNotifier {
   //====================================================
 
   Future<void> fetchPumpStatus() async {
+
     try {
+
       final data = await ApiService.getPumpStatus();
 
       _pumpRunning = data["running"];
@@ -261,10 +293,24 @@ class DeviceProvider extends ChangeNotifier {
       _remainingSeconds = data["remaining"];
 
       notifyListeners();
+
     } catch (e) {
-      debugPrint("Pump Status Error: $e");
+
+      _setError("Unable to fetch pump status.");
+
     }
+
   }
+
+  //====================================================
+  // Refresh Everything
+  //====================================================
+
+  Future<void> refreshAll() async {
+    await fetchDevices();
+    await fetchPumpStatus();
+
+}
 
   //====================================================
   // Start Pump
@@ -275,11 +321,10 @@ class DeviceProvider extends ChangeNotifier {
 
       startPumpPolling();
 
-      await fetchPumpStatus();
+      await refreshAll();
 
-      await fetchDevices();
     } catch (e) {
-      debugPrint("Start Pump Error: $e");
+      _setError("Unable to Start Pump");
     }
   }
 
@@ -312,9 +357,7 @@ class DeviceProvider extends ChangeNotifier {
 
           (_) async {
 
-        await fetchPumpStatus();
-
-        await fetchDevices();
+       await refreshAll();
 
       },
 
@@ -326,6 +369,11 @@ class DeviceProvider extends ChangeNotifier {
 
     _pumpStatusTimer?.cancel();
 
+  }
+
+  void addDevice(DeviceModel device){
+    devices.add(device);
+    notifyListeners();
   }
 
 
