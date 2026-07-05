@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../../models/device_model.dart';
 import '../../providers/device_provider.dart';
 
+import '../add_device/add_device_screen.dart';
+
 class DeviceDetailsScreen extends StatelessWidget {
   final DeviceModel device;
 
@@ -41,11 +43,39 @@ class DeviceDetailsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(currentDevice.name),
+
+        actions: [
+
+          IconButton(
+
+            icon: const Icon(Icons.edit),
+
+            onPressed: () {
+
+              Navigator.push(
+
+                context,
+
+                MaterialPageRoute(
+
+                  builder: (_) => AddDeviceScreen(
+                    device: currentDevice,
+                  ),
+
+                ),
+
+              );
+
+            },
+
+          ),
+
+        ],
       ),
 
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
 
@@ -160,8 +190,96 @@ class DeviceDetailsScreen extends StatelessWidget {
               title: const Text("Device Name"),
               subtitle: Text(currentDevice.name),
             ),
+            const SizedBox(height: 30),
+
+
+            SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+                icon: const Icon(
+                  Icons.delete,
+                  color: Colors.white,
+                ),
+                label: const Text("DELETE DEVICE",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),),
+                onPressed: () async {
+
+                  final shouldDelete = await showDialog<bool>(
+
+                    context: context,
+
+                    builder: (context) {
+
+                      return AlertDialog(
+
+                        title: const Text("Delete Device"),
+
+                        content: Text(
+                          "Are you sure you want to delete '${currentDevice.name}'?",
+                        ),
+
+                        actions: [
+
+                          TextButton(
+
+                            onPressed: () {
+
+                              Navigator.pop(context, false);
+
+                            },
+
+                            child: const Text("Cancel"),
+
+                          ),
+
+                          ElevatedButton(
+
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                            ),
+
+                            onPressed: () {
+
+                              Navigator.pop(context, true);
+
+                            },
+
+                            child: const Text(
+                              "Delete",
+                              style: TextStyle(color: Colors.white),
+                            ),
+
+                          ),
+
+                        ],
+
+                      );
+
+                    },
+
+                  );
+
+                  if (shouldDelete == true) {
+
+                    provider.deleteDevice(currentDevice.id);
+
+                    Navigator.pop(context);
+
+                  }
+
+                },
+              ),
+            )
     ],
         ),
+      ),
       ),
     );
   }

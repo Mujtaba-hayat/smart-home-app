@@ -376,5 +376,21 @@ class DeviceProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateDevice(DeviceModel updateDevice){
+    final index = devices.indexWhere(
+        (device) => device.id == updateDevice.id,
+    );
+    if (index != -1){
+      devices[index] = updateDevice;
+      notifyListeners();
+    }
+  }
+  void deleteDevice(String id ){
+    devices.removeWhere(
+        (device) => device.id == id,
+    );
+    notifyListeners();
+  }
+
 
 }
