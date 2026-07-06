@@ -7,11 +7,15 @@ class FilterChips extends StatelessWidget {
   final DeviceType? selected;
 
   final ValueChanged<DeviceType?> onSelected;
+  final bool showFavoritesOnly;
+  final VoidCallback onFavoriteTap;
 
   const FilterChips({
     super.key,
     required this.selected,
     required this.onSelected,
+    required this.showFavoritesOnly,
+    required this.onFavoriteTap,
   });
 
   @override
@@ -74,6 +78,21 @@ class FilterChips extends StatelessWidget {
 
           ),
 
+          const SizedBox(width: 10),
+
+          ChoiceChip(
+
+            label: const Text("⭐ Favorites"),
+
+            selected: showFavoritesOnly,
+
+            onSelected: (_) {
+
+              onFavoriteTap();
+
+            },
+
+          ),
         ],
 
       ),

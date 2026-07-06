@@ -154,17 +154,38 @@ class DeviceProvider extends ChangeNotifier {
 
   String _searchText = "";
   DeviceType? _selectedFilter;
+  bool _showFavoritesOnly = false;
   String get searchText => _searchText;
   DeviceType? get selectedFilter => _selectedFilter;
+  bool get showFavoriteOnly => _showFavoritesOnly;
 
   void updateSearch(String value) {
     _searchText = value;
     notifyListeners();
   }
 
-  void updateFilter (DeviceType? type) {
+  void updateFilter(DeviceType? type) {
+
     _selectedFilter = type;
+
+    // Turn off Favorites filter when selecting a type
+    _showFavoritesOnly = false;
+
     notifyListeners();
+
+  }
+
+  void toggleFavoritesFilter() {
+
+    _showFavoritesOnly = !_showFavoritesOnly;
+
+    if (_showFavoritesOnly) {
+      // Show all favorite devices regardless of type
+      _selectedFilter = null;
+    }
+
+    notifyListeners();
+
   }
 
   List<DeviceModel> get filteredDevices {
@@ -179,12 +200,16 @@ class DeviceProvider extends ChangeNotifier {
           _selectedFilter ==null ||
       device.type == _selectedFilter;
 
+      final matchesFavorite =
+          !_showFavoritesOnly || device.isFavorite;
+
       //Hide pump because it has its own card
       final hidepump =
           device.type != DeviceType.pump;
 
       return matchesSearch &&
       matchesFilter &&
+          matchesFavorite &&
       hidepump;
     }).toList();
   }
@@ -392,5 +417,9 @@ class DeviceProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void toggleFavorite(DeviceModel device){
+    device.isFavorite = !device.isFavorite;
+    notifyListeners();
+  }
 
 }

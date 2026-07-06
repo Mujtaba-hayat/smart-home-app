@@ -180,6 +180,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
                           type: _selectedType!,
                           iconName: getIconName(),
                           isOn: widget.device!.isOn,
+                          isFavorite: widget.device!.isFavorite,
                         );
 
                         provider.updateDevice(updatedDevice);

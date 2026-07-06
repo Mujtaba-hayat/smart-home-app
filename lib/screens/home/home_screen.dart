@@ -156,8 +156,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 FilterChips(
                   selected: deviceProvider.selectedFilter,
 
-                  onSelected: (type) {
-                    deviceProvider.updateFilter(type);
+                  onSelected: (value) {
+                    deviceProvider.updateFilter(value);
+                  },
+                  showFavoritesOnly: deviceProvider.showFavoriteOnly,
+
+                  onFavoriteTap: () {
+                    deviceProvider.toggleFavoritesFilter();
                   },
                 ),
 
@@ -185,10 +190,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     return DeviceCard(
                       deviceName: device.name,
-
                       icon: _getIcon(device.iconName),
-
                       isOn: device.isOn,
+                      isFavorite: device.isFavorite,
 
                       onToggle: () {
                         deviceProvider.toggleDevice(device);

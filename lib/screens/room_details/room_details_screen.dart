@@ -51,6 +51,7 @@ class RoomDetailsScreen extends StatelessWidget {
               deviceName: device.name,
               icon: _getIcon(device.iconName),
               isOn: device.isOn,
+              isFavorite: device.isFavorite,
 
               onToggle: () {
                 provider.toggleDevice(device);

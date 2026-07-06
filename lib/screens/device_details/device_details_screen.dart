@@ -42,29 +42,21 @@ class DeviceDetailsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(currentDevice.name),
+       title: Text(currentDevice.name),
 
         actions: [
 
           IconButton(
 
-            icon: const Icon(Icons.edit),
+            icon: Icon(
+              currentDevice.isFavorite
+                  ? Icons.star
+                  : Icons.star_border,
+            ),
 
             onPressed: () {
+              provider.toggleFavorite(currentDevice);
 
-              Navigator.push(
-
-                context,
-
-                MaterialPageRoute(
-
-                  builder: (_) => AddDeviceScreen(
-                    device: currentDevice,
-                  ),
-
-                ),
-
-              );
 
             },
 

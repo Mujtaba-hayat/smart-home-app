@@ -4,14 +4,11 @@ class DeviceModel {
   final String id;
 
   String name;
-
   String room;
-
   DeviceType type;
-
   String iconName;
-
   bool isOn;
+  bool isFavorite;
 
   DeviceModel({
    required this.id,
@@ -20,5 +17,6 @@ class DeviceModel {
     required this.type,
     required this.iconName,
     required this.isOn,
+    this.isFavorite = false,
 });
 }
