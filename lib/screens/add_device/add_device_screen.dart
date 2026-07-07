@@ -57,6 +57,21 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
         return "pump";
     }
   }
+  double getDefaultPower() {
+    switch (_selectedType!) {
+      case DeviceType.light:
+        return 10;
+
+      case DeviceType.fan:
+        return 75;
+
+      case DeviceType.alarm:
+        return 15;
+
+      case DeviceType.pump:
+        return 550;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -168,6 +183,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
                           type: _selectedType!,
                           iconName: getIconName(),
                           isOn: false,
+                          power: getDefaultPower(),
                         );
 
                         provider.addDevice(device);
@@ -181,6 +197,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
                           iconName: getIconName(),
                           isOn: widget.device!.isOn,
                           isFavorite: widget.device!.isFavorite,
+                          power: widget.device!.power,
                         );
 
                         provider.updateDevice(updatedDevice);

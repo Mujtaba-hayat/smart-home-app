@@ -10,6 +10,8 @@ class DeviceModel {
   bool isOn;
   bool isFavorite;
 
+  double power;
+
   DeviceModel({
    required this.id,
     required this.name,
@@ -18,5 +20,6 @@ class DeviceModel {
     required this.iconName,
     required this.isOn,
     this.isFavorite = false,
+    required this.power,
 });
 }

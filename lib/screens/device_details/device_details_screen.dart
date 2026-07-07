@@ -182,6 +182,12 @@ class DeviceDetailsScreen extends StatelessWidget {
               title: const Text("Device Name"),
               subtitle: Text(currentDevice.name),
             ),
+
+            ListTile(
+              leading: const Icon(Icons.bolt),
+              title: const Text("Power Consumption"),
+              subtitle: Text("${currentDevice.power} W"),
+            ),
             const SizedBox(height: 30),
 
 

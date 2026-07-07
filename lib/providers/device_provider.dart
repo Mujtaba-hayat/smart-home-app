@@ -21,6 +21,7 @@ class DeviceProvider extends ChangeNotifier {
       type: DeviceType.light,
       iconName: "lightbulb",
       isOn: false,
+      power: 10,
     ),
 
     DeviceModel(
@@ -30,6 +31,7 @@ class DeviceProvider extends ChangeNotifier {
       type: DeviceType.fan,
       iconName: "fan",
       isOn: false,
+      power: 75,
     ),
 
     DeviceModel(
@@ -39,6 +41,7 @@ class DeviceProvider extends ChangeNotifier {
       type: DeviceType.light,
       iconName: "lightbulb",
       isOn: false,
+      power: 10,
     ),
 
     DeviceModel(
@@ -48,6 +51,7 @@ class DeviceProvider extends ChangeNotifier {
       type: DeviceType.fan,
       iconName: "fan",
       isOn: false,
+      power: 75,
     ),
 
     DeviceModel(
@@ -57,6 +61,7 @@ class DeviceProvider extends ChangeNotifier {
       type: DeviceType.light,
       iconName: "lightbulb",
       isOn: false,
+      power: 12,
     ),
 
     DeviceModel(
@@ -66,6 +71,7 @@ class DeviceProvider extends ChangeNotifier {
       type: DeviceType.light,
       iconName: "lightbulb",
       isOn: false,
+      power: 8,
     ),
 
     DeviceModel(
@@ -75,6 +81,7 @@ class DeviceProvider extends ChangeNotifier {
       type: DeviceType.alarm,
       iconName: "alarm",
       isOn: false,
+      power: 15,
     ),
 
     DeviceModel(
@@ -84,6 +91,7 @@ class DeviceProvider extends ChangeNotifier {
       type: DeviceType.pump,
       iconName: "pump",
       isOn: false,
+      power: 550,
     ),
   ];
 
@@ -99,6 +107,15 @@ class DeviceProvider extends ChangeNotifier {
           .length;
 
   int get onlineDevices => devices.length;
+
+  double get currentPowerUsage {
+    return devices
+        .where((device) => device.isOn)
+        .fold(
+      0.0,
+        (total, device) => total + device.power,
+    );
+  }
 
   //====================================================
   // Loading & Error State

@@ -17,6 +17,10 @@ import '../device_details/device_details_screen.dart';
 
 import '../add_device/add_device_screen.dart';
 
+import 'widgets/room_status_card.dart';
+
+import '../../data/room_data.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -104,10 +108,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
 
                 Row(
-                  children: const [
+                  children: [
                     StatusCard(
-                      title: "Energy",
-                      value: "12kwh",
+                      title: "Power",
+                      value: "${deviceProvider.currentPowerUsage.toStringAsFixed(0)} W",
                       icon: Icons.bolt,
                     ),
 
@@ -144,6 +148,34 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
 
                 const SizedBox(height: 25),
+
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Room Overview",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: roomList.length,
+                  itemBuilder: (context, index){
+                    final room = roomList[index];
+
+                    return RoomStatusCard(
+                      roomName: room.name,
+                      totalDevices: deviceProvider.getActiveDeviceCount(room.name),
+                      activeDevices: deviceProvider.getActiveDeviceCount(room.name),
+                    );
+                  },
+                ),
 
                 SearchBarWidget(
                   onChanged: (value) {
