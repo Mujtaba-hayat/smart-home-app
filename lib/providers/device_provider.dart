@@ -117,6 +117,47 @@ class DeviceProvider extends ChangeNotifier {
     );
   }
 
+
+  DeviceModel get highestPowerDevice {
+
+    final poweredDevices = devices.where(
+        (device) => device.isOn,
+    ).toList();
+
+    if (poweredDevices.isEmpty) {
+      return devices.first;
+    }
+
+    return poweredDevices.reduce(
+
+        (current, next){
+          return current.power > next.power
+              ? current: next;
+        },
+    );
+  }
+
+  double get estimateHourlyEnergy {
+    return currentPowerUsage / 1000;
+  }
+
+
+  double get estimatedHourlyCost{
+    const ratePerKwh = 65.0;
+    return estimateHourlyEnergy * ratePerKwh;
+
+  }
+
+
+  List<DeviceModel> get topPowerDevices {
+    final sortedDevices = List<DeviceModel>.from(devices);
+
+    sortedDevices.sort(
+        (a,b) => b.power.compareTo(a.power),
+    );
+    return sortedDevices.take(5).toList();
+  }
+
   //====================================================
   // Loading & Error State
   //====================================================
@@ -437,6 +478,20 @@ class DeviceProvider extends ChangeNotifier {
   void toggleFavorite(DeviceModel device){
     device.isFavorite = !device.isFavorite;
     notifyListeners();
+  }
+
+  double getRoomPower(String roomName){
+    return devices
+
+        .where(
+        (device)=>
+            device.room == roomName &&
+        device.isOn,
+    )
+        .fold(
+      0.0,
+        (total,device) => total + device.power,
+    );
   }
 
 }
