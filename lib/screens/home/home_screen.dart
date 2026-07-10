@@ -38,16 +38,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
       await provider.refreshAll();
 
-      provider.startPumpPolling();
+
     });
   }
 
-  @override
-  void dispose() {
-    Provider.of<DeviceProvider>(context, listen: false).stopPumpPolling();
 
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
