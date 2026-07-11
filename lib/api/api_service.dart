@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 class ApiService {
 
   static const String baseUrl =
-      "http://192.168.1.68:3000";
+      "http://192.168.1.39:3000";
 
   //==========================
   // Get All Devices
