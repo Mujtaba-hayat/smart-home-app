@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'core/theme/app_theme.dart';
-import 'screens/main_navigation_screen.dart';
 import 'package:provider/provider.dart';
 
 import 'providers/device_provider.dart';
 import 'providers/automation_provider.dart';
+import 'screens/splash/splash_screen.dart';
 
 void main(){
   runApp(const SmartHomeApp());
@@ -32,7 +32,7 @@ class SmartHomeApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: 'Smart Home',
         theme: AppTheme.darkTheme,
-        home: const MainNavigationScreen(),
+        home: const SplashScreen(),
       ),
     );
   }
