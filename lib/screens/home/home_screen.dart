@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:async';
 
 import '../../core/theme/app_colors.dart';
 import '../../providers/device_provider.dart';
@@ -29,17 +30,33 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  Timer? _refreshTimer;
   @override
   void initState() {
     super.initState();
 
     Future.microtask(() async {
-      final provider = Provider.of<DeviceProvider>(context, listen: false);
+      final provider = Provider.of<DeviceProvider>(
+        context,
+        listen: false,
+      );
 
       await provider.refreshAll();
-
-
     });
+
+    _refreshTimer = Timer.periodic(
+      const Duration(seconds: 2),
+          (_) async {
+        if (!mounted) return;
+
+        final provider = Provider.of<DeviceProvider>(
+          context,
+          listen: false,
+        );
+
+        await provider.refreshAll();
+      },
+    );
   }
 
 
@@ -244,6 +261,12 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
 
   IconData _getIcon(String iconName) {
     switch (iconName) {

@@ -1,21 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:smart_home/models/automation_model.dart';
+import '../../../models/automation_model.dart';
 
 class AutomationCard extends StatelessWidget {
-  final String deviceName;
-  final String time;
-  final bool turnOn;
-  final String repeatDays;
-  final bool enabled;
-  final ValueChanged<bool> onToggle;
+final AutomationModel automation;
+final ValueChanged<bool> onToggle;
+final VoidCallback onEdit;
+final VoidCallback onDelete;
 
   const AutomationCard({
     super.key,
-    required this.deviceName,
-    required this.time,
-    required this.turnOn,
-    required this.repeatDays,
-    required this.enabled,
+    required this.automation,
     required this.onToggle,
+    required this.onEdit,
+    required this.onDelete,
   });
 
   @override
@@ -33,7 +31,7 @@ class AutomationCard extends StatelessWidget {
         ),
 
         title: Text(
-          deviceName,
+          automation.deviceName,
           style: const TextStyle(
             fontWeight: FontWeight.bold,
           ),
@@ -45,23 +43,38 @@ class AutomationCard extends StatelessWidget {
 
             const SizedBox(height: 6),
 
-            Text("Time: $time"),
+            Text("Time: ${automation.time}"),
 
             Text(
-              turnOn
+              automation.turnOn
               ? "Action: Turn ON"
                   : "Action OFF",
 
             ),
 
-            Text("Repeat: $repeatDays"),
+            Text("Repeat: ${automation.repeatDays.join(",")}"),
           ],
         ),
 
-        trailing: Switch(
-          value: enabled,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
 
-          onChanged: onToggle,
+            IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: onEdit,
+            ),
+
+            IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: onDelete,
+            ),
+
+            Switch(
+              value: automation.enabled,
+              onChanged: onToggle,
+            ),
+          ],
         ),
       ),
     );

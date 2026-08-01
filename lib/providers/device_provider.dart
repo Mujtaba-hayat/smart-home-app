@@ -346,8 +346,7 @@ class DeviceProvider extends ChangeNotifier {
       device.isOn = !device.isOn;
 
       notifyListeners();
-
-      debugPrint("Toggle Error: $e");
+      _setError("Unable to control device.");
     }
   }
 
@@ -426,7 +425,7 @@ class DeviceProvider extends ChangeNotifier {
 
       await fetchDevices();
     } catch (e) {
-      debugPrint("Stop Pump Error: $e");
+      _setError("Unable to stop pump.");
     }
   }
 

@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import '../../providers/device_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../../providers/automation_provider.dart';
 import '../../models/automation_model.dart';
+import '../../services/automation_service.dart';
 
 class AddAutomationScreen extends StatefulWidget {
-  const AddAutomationScreen({super.key});
+  final AutomationModel? automation;
+  const AddAutomationScreen({
+    super.key,
+    this.automation,
+  });
 
   @override
   State<AddAutomationScreen> createState() => _AddAutomationScreenState();
@@ -20,15 +24,28 @@ class _AddAutomationScreenState extends State<AddAutomationScreen> {
   TimeOfDay _selectedTime = TimeOfDay.now();
 
   bool _turnOn = true;
+  int _pumpDuration = 5;
 
   final List<String> _days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
   final List<String> _selectedDays = [];
 
+  final AutomationService _automationService = AutomationService();
+
+  @override
+  void initState(){
+    super.initState();
+
+    if (widget.automation != null) {
+      _selectedDevice = widget.automation!.deviceName;
+      _turnOn = widget.automation!.turnOn;
+      _selectedDays.addAll(widget.automation!.repeatDays);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final deviceProvider = Provider.of<DeviceProvider>(context);
-    final automationProvider = Provider.of<AutomationProvider>(context, listen: false);
     return Scaffold(
       appBar: AppBar(title: const Text("Add Automation")),
 
@@ -38,7 +55,8 @@ class _AddAutomationScreenState extends State<AddAutomationScreen> {
         child: Form(
           key: _formKey,
 
-          child: Column(
+          child: SingleChildScrollView(
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
 
             children: [
@@ -50,7 +68,7 @@ class _AddAutomationScreenState extends State<AddAutomationScreen> {
               const SizedBox(height: 20),
 
               DropdownButtonFormField<String>(
-                initialValue: _selectedDevice,
+                    value: _selectedDevice,
 
                 decoration: const InputDecoration(
                   labelText: "Select Device",
@@ -70,6 +88,8 @@ class _AddAutomationScreenState extends State<AddAutomationScreen> {
                   setState(() {
                     _selectedDevice = value;
                   });
+
+                  debugPrint("Stored value: $_selectedDevice");
                 },
                 validator: (value) {
                   if (value == null) {
@@ -77,6 +97,20 @@ class _AddAutomationScreenState extends State<AddAutomationScreen> {
                   }
                   return null;
                 },
+              ),
+
+              Container(
+                padding: const EdgeInsets.all(10),
+                color: Colors.black12,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Selected = $_selectedDevice"),
+                    Text(
+                      "Comparison = ${_selectedDevice == "Water Pump"}",
+                    ),
+                  ],
+                ),
               ),
 
               const SizedBox(height: 20),
@@ -122,6 +156,47 @@ class _AddAutomationScreenState extends State<AddAutomationScreen> {
                 },
               ),
 
+              if ((_selectedDevice ?? "").trim() == "Water Pump") ...[
+
+                DropdownButtonFormField<int>(
+                  value: _pumpDuration,
+
+                  decoration: const InputDecoration(
+                    labelText: "Pump Duration",
+                    border: OutlineInputBorder(),
+                  ),
+
+                  items: const [
+                    DropdownMenuItem(
+                      value: 5,
+                      child: Text("5 Minutes"),
+                    ),
+                    DropdownMenuItem(
+                      value: 10,
+                      child: Text("10 Minutes"),
+                    ),
+                    DropdownMenuItem(
+                      value: 15,
+                      child: Text("15 Minutes"),
+                    ),
+                    DropdownMenuItem(
+                      value: 20,
+                      child: Text("20 Minutes"),
+                    ),
+                    DropdownMenuItem(
+                      value: 30,
+                      child: Text("30 Minutes"),
+                    ),
+                  ],
+
+                  onChanged: (value) {
+                    setState(() {
+                      _pumpDuration = value!;
+                    });
+                  },
+                ),
+              ],
+
               const SizedBox(height: 20),
 
               const Text(
@@ -162,36 +237,60 @@ class _AddAutomationScreenState extends State<AddAutomationScreen> {
                 width: double.infinity,
 
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (!_formKey.currentState!.validate()) {
                       return;
-
                     }
-                      final selectedDevice = deviceProvider.devices.firstWhere(
+
+                    final selectedDevice = deviceProvider.devices.firstWhere(
                           (device) => device.name == _selectedDevice,
-                      );
+                    );
 
-                      final automation = AutomationModel(
-                        id: DateTime.now().millisecondsSinceEpoch.toString(),
-                        deviceId: selectedDevice.id,
-                        deviceName: selectedDevice.name,
-                        time: _selectedTime.format(context),
-                        turnOn: _turnOn,
-                        enabled: true,
-                        repeatDays: List.from(_selectedDays),
-                      );
+                    final automation = AutomationModel(
+                      id: widget.automation?.id ??
+                          DateTime.now().millisecondsSinceEpoch.toString(),
 
-                      automationProvider.addAutomation(automation);
+                      deviceId: selectedDevice.id,
+                      deviceName: selectedDevice.name,
 
+                      time: _selectedTime.format(context),
+
+                      turnOn: _turnOn,
+
+                      enabled: true,
+
+                      repeatDays: List.from(_selectedDays),
+
+                      durationMinutes:
+                      selectedDevice.id == "R8"
+                          ? _pumpDuration
+                          : null,
+                    );
+
+                    late final response;
+
+                    if (widget.automation == null) {
+                      response = await _automationService.createAutomation(automation);
+                    } else {
+                      response = await _automationService.updateAutomation(automation);
+                    }
+
+                    if (response.statusCode == 200 || response.statusCode == 201) {
                       Navigator.pop(context);
-
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(response.body),
+                        ),
+                      );
+                    }
                   },
 
                   child: const Text("Save Automation"),
                 ),
               ),
             ],
-          ),
+          ),),
         ),
       ),
     );
