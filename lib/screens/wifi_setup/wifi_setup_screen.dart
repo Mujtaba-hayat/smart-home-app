@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class WifiSetupScreen extends StatefulWidget {
   const WifiSetupScreen({super.key});
@@ -26,21 +27,81 @@ class _WifiSetupScreenState extends State<WifiSetupScreen> {
     super.dispose();
   }
 
-  void _saveWifi() {
+  Future<void> _saveWifi() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    debugPrint("Wi-Fi Name: ${_ssidController.text}");
-    debugPrint("Wi-Fi Password: ${_passwordController.text}");
+    final ssid = _ssidController.text.trim();
+    final password = _passwordController.text;
+
+    debugPrint("Wi-Fi Name: $ssid");
+    debugPrint("Sending Wi-Fi credentials to ESP32...");
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text(
-          "Wi-Fi information entered successfully",
+          "Connecting to ESP32...",
         ),
       ),
     );
+
+    try {
+      final uri = Uri.http(
+        "192.168.4.1",
+        "/save",
+        {
+          "ssid": ssid,
+          "password": password,
+        },
+      );
+
+      debugPrint("ESP32 URL: $uri");
+
+      final response = await http.get(uri).timeout(
+        const Duration(seconds: 10),
+      );
+
+      debugPrint(
+        "ESP32 Response Code: ${response.statusCode}",
+      );
+
+      debugPrint(
+        "ESP32 Response: ${response.body}",
+      );
+
+      if (!mounted) return;
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              "Wi-Fi credentials sent successfully!",
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "ESP32 returned error: ${response.statusCode}",
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint("ESP32 Connection Error: $e");
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Could not connect to ESP32: $e",
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -243,10 +304,9 @@ class _WifiSetupScreenState extends State<WifiSetupScreen> {
                 ),
 
                 const SizedBox(height: 30),
-
-                // =========================================
-                // Save Button
-                // =========================================
+// =========================================
+// Connect ESP32 Button
+// =========================================
 
                 SizedBox(
                   width: double.infinity,
@@ -254,6 +314,47 @@ class _WifiSetupScreenState extends State<WifiSetupScreen> {
                   height: 52,
 
                   child: ElevatedButton.icon(
+                    onPressed: () {
+
+                      debugPrint(
+                        "Connect ESP32 button pressed",
+                      );
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            "Connect your phone to SmartHome_Setup first.",
+                          ),
+                        ),
+                      );
+
+                    },
+
+                    icon: const Icon(
+                      Icons.wifi_find,
+                    ),
+
+                    label: const Text(
+                      "Connect ESP32",
+                      style: TextStyle(
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+
+// =========================================
+// Save Wi-Fi Button
+// =========================================
+
+                SizedBox(
+                  width: double.infinity,
+
+                  height: 52,
+
+                  child: OutlinedButton.icon(
                     onPressed: _saveWifi,
 
                     icon: const Icon(
@@ -268,6 +369,7 @@ class _WifiSetupScreenState extends State<WifiSetupScreen> {
                     ),
                   ),
                 ),
+
               ],
             ),
           ),
