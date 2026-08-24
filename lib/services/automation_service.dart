@@ -6,7 +6,7 @@ import '../models/automation_model.dart';
 
 
 class AutomationService {
-  static const String baseUrl = "http://10.0.2.2:3000";
+  static const String baseUrl = "http://192.168.1.92:3000";
   Future<http.Response> createAutomation(
       AutomationModel automation,
       ) async {

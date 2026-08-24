@@ -4,40 +4,27 @@ import 'package:provider/provider.dart';
 import '../../core/widgets/custom_dropdown.dart';
 import '../../core/widgets/custom_text_field.dart';
 import '../../data/room_data.dart';
-import '../../models/device_model.dart';
 import '../../models/device_type.dart';
 import '../../providers/device_provider.dart';
 
 class AddDeviceScreen extends StatefulWidget {
-  final DeviceModel? device;
-
   const AddDeviceScreen({
     super.key,
-    this.device,
   });
 
   @override
-  State<AddDeviceScreen> createState() => _AddDeviceScreenState();
+  State<AddDeviceScreen> createState() =>
+      _AddDeviceScreenState();
 }
 
 class _AddDeviceScreenState extends State<AddDeviceScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _nameController =
+  TextEditingController();
 
   String? _selectedRoom;
   DeviceType? _selectedType;
-
-  @override
-  void initState() {
-    super.initState();
-
-    if (widget.device != null) {
-      _nameController.text = widget.device!.name;
-      _selectedRoom = widget.device!.room;
-      _selectedType = widget.device!.type;
-    }
-  }
 
   @override
   void dispose() {
@@ -45,172 +32,213 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
     super.dispose();
   }
 
-  String getIconName() {
-    switch (_selectedType!) {
-      case DeviceType.light:
-        return "lightbulb";
-      case DeviceType.fan:
-        return "fan";
-      case DeviceType.alarm:
-        return "alarm";
-      case DeviceType.pump:
-        return "pump";
+  Future<void> _addDevice() async {
+    // -----------------------------------------------
+    // Validate form
+    // -----------------------------------------------
+
+    if (!_formKey.currentState!.validate()) {
+      return;
     }
-  }
-  double getDefaultPower() {
-    switch (_selectedType!) {
-      case DeviceType.light:
-        return 10;
 
-      case DeviceType.fan:
-        return 75;
+    final provider =
+    Provider.of<DeviceProvider>(
+      context,
+      listen: false,
+    );
 
-      case DeviceType.alarm:
-        return 15;
+    // -----------------------------------------------
+    // Get values before async operation
+    // -----------------------------------------------
 
-      case DeviceType.pump:
-        return 550;
+    final name = _nameController.text.trim();
+    final room = _selectedRoom!;
+    final type = _selectedType!;
+
+    // -----------------------------------------------
+    // Create device
+    // -----------------------------------------------
+
+    final success = await provider.createDevice(
+      name: name,
+      room: room,
+      type: type,
+    );
+
+    if (!mounted) {
+      return;
     }
+
+    // -----------------------------------------------
+    // Success
+    // -----------------------------------------------
+
+    if (success) {
+      Navigator.pop(context, true);
+      return;
+    }
+
+    // -----------------------------------------------
+    // Failure
+    // -----------------------------------------------
+
+    final error =
+        provider.errorMessage ??
+            "Unable to add device.";
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(error),
+        duration: const Duration(seconds: 5),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final provider =
+    Provider.of<DeviceProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          widget.device == null ? "Add Device" : "Edit Device",
-        ),
+        title: const Text("Add Device"),
       ),
+
       body: Padding(
         padding: const EdgeInsets.all(20),
+
         child: Form(
           key: _formKey,
+
           child: Column(
             children: [
+              // =======================================
+              // Device Name
+              // =======================================
+
               CustomTextField(
                 controller: _nameController,
                 label: "Device Name",
                 icon: Icons.devices,
+
                 validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
+                  if (value == null ||
+                      value.trim().isEmpty) {
                     return "Please enter device name";
                   }
+
                   return null;
                 },
               ),
 
               const SizedBox(height: 20),
+
+              // =======================================
+              // Room
+              // =======================================
 
               CustomDropdown<String>(
                 label: "Room",
                 icon: Icons.home,
                 value: _selectedRoom,
-                items: roomList.map((room) {
-                  return DropdownMenuItem(
-                    value: room.name,
-                    child: Text(room.name),
-                  );
-                }).toList(),
+
+                items: roomList.map(
+                      (room) {
+                    return DropdownMenuItem<String>(
+                      value: room.name,
+                      child: Text(room.name),
+                    );
+                  },
+                ).toList(),
+
                 onChanged: (value) {
                   setState(() {
                     _selectedRoom = value;
                   });
                 },
+
                 validator: (value) {
                   if (value == null) {
                     return "Please select a room";
                   }
+
                   return null;
                 },
               ),
 
               const SizedBox(height: 20),
 
+              // =======================================
+              // Device Type
+              // =======================================
+
               CustomDropdown<DeviceType>(
                 label: "Device Type",
                 icon: Icons.category,
                 value: _selectedType,
-                items: DeviceType.values.map((type) {
-                  return DropdownMenuItem(
-                    value: type,
-                    child: Text(type.name.toUpperCase()),
-                  );
-                }).toList(),
+
+                items: DeviceType.values
+                    .where(
+                      (type) =>
+                  type != DeviceType.pump,
+                )
+                    .map(
+                      (type) {
+                    return DropdownMenuItem<DeviceType>(
+                      value: type,
+                      child: Text(
+                        type.name.toUpperCase(),
+                      ),
+                    );
+                  },
+                )
+                    .toList(),
+
                 onChanged: (value) {
                   setState(() {
                     _selectedType = value;
                   });
                 },
+
                 validator: (value) {
                   if (value == null) {
                     return "Please select device type";
                   }
+
                   return null;
                 },
               ),
 
               const SizedBox(height: 30),
 
+              // =======================================
+              // Add Device Button
+              // =======================================
+
               SizedBox(
                 width: double.infinity,
                 height: 55,
+
                 child: ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      final provider = Provider.of<DeviceProvider>(
-                        context,
-                        listen: false,
-                      );
+                  onPressed:
+                  provider.isLoading
+                      ? null
+                      : _addDevice,
 
-                      if (widget.device == null) {
-                        // ADD MODE
-                        int nextId = 1;
+                  child: provider.isLoading
+                      ? const SizedBox(
+                    width: 24,
+                    height: 24,
 
-                        while (
-                        provider.devices.any(
-                              (device) => device.id == "R$nextId",
-                        )
-                        ) {
-                          nextId++;
-                        }
-
-                        final id = "R$nextId";
-
-                        final device = DeviceModel(
-                          id: id,
-                          name: _nameController.text.trim(),
-                          room: _selectedRoom!,
-                          type: _selectedType!,
-                          iconName: getIconName(),
-                          isOn: false,
-                          power: getDefaultPower(),
-                        );
-
-                        provider.addDevice(device);
-                      } else {
-                        // EDIT MODE
-                        final updatedDevice = DeviceModel(
-                          id: widget.device!.id,
-                          name: _nameController.text.trim(),
-                          room: _selectedRoom!,
-                          type: _selectedType!,
-                          iconName: getIconName(),
-                          isOn: widget.device!.isOn,
-                          isFavorite: widget.device!.isFavorite,
-                          power: widget.device!.power,
-                        );
-
-                        provider.updateDevice(updatedDevice);
-                      }
-
-                      Navigator.pop(context);
-                    }
-                  },
-                  child: Text(
-                    widget.device == null
-                        ? "ADD DEVICE"
-                        : "SAVE CHANGES",
-                    style: const TextStyle(
+                    child:
+                    CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                      : const Text(
+                    "ADD DEVICE",
+                    style: TextStyle(
                       fontSize: 16,
                     ),
                   ),

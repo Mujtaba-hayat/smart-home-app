@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
-import 'core/theme/app_theme.dart';
 import 'package:provider/provider.dart';
+
+import 'core/theme/app_theme.dart';
 
 import 'providers/device_provider.dart';
 import 'providers/automation_provider.dart';
+import 'providers/auth_provider.dart';
+import 'providers/smart_home_provider.dart';
+
 import 'screens/splash/splash_screen.dart';
 
-void main(){
+void main() {
   runApp(const SmartHomeApp());
-
 }
 
 class SmartHomeApp extends StatelessWidget {
@@ -19,19 +22,46 @@ class SmartHomeApp extends StatelessWidget {
     return MultiProvider(
       providers: [
 
+        // =========================================
+        // DEVICE PROVIDER
+        // =========================================
+
         ChangeNotifierProvider(
           create: (_) => DeviceProvider(),
         ),
 
+        // =========================================
+        // AUTOMATION PROVIDER
+        // =========================================
+
         ChangeNotifierProvider(
-          create: (_) =>AutomationProvider(),
+          create: (_) => AutomationProvider(),
+        ),
+
+        // =========================================
+        // AUTH PROVIDER
+        // =========================================
+
+        ChangeNotifierProvider(
+          create: (_) => AuthProvider(),
+        ),
+
+        // =========================================
+        // SMART HOME PROVIDER
+        // =========================================
+
+        ChangeNotifierProvider(
+          create: (_) => SmartHomeProvider(),
         ),
       ],
 
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
+
         title: 'Smart Home',
+
         theme: AppTheme.darkTheme,
+
         home: const SplashScreen(),
       ),
     );

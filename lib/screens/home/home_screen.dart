@@ -15,7 +15,6 @@ import 'widgets/search_bar_widget.dart';
 import 'widgets/filter_chips.dart';
 
 import '../device_details/device_details_screen.dart';
-
 import '../add_device/add_device_screen.dart';
 
 import 'widgets/room_status_card.dart';
@@ -31,22 +30,25 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   Timer? _refreshTimer;
+
   @override
   void initState() {
     super.initState();
 
-    Future.microtask(() async {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
       final provider = Provider.of<DeviceProvider>(
         context,
         listen: false,
       );
 
-      await provider.refreshAll();
+      provider.refreshAll();
     });
 
     _refreshTimer = Timer.periodic(
       const Duration(seconds: 2),
-          (_) async {
+          (_) {
         if (!mounted) return;
 
         final provider = Provider.of<DeviceProvider>(
@@ -54,20 +56,14 @@ class _HomeScreenState extends State<HomeScreen> {
           listen: false,
         );
 
-        await provider.refreshAll();
+        provider.refreshAll();
       },
     );
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     final deviceProvider = Provider.of<DeviceProvider>(context);
-
-    final displayDevices = deviceProvider.devices
-        .where((device) => device.id != "R8")
-        .toList();
 
     return Scaffold(
       floatingActionButton: FloatingActionButton(
@@ -76,13 +72,12 @@ class _HomeScreenState extends State<HomeScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_)=> const AddDeviceScreen(),
+              builder: (_) => const AddDeviceScreen(),
             ),
           );
         },
         child: const Icon(Icons.add),
       ),
-
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
@@ -90,9 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-
             padding: const EdgeInsets.all(20),
-
             child: Column(
               children: [
                 const GreetingSection(),
@@ -110,7 +103,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       value: deviceProvider.onlineDevices.toString(),
                       icon: Icons.wifi,
                     ),
-
                     StatusCard(
                       title: "Active",
                       value: deviceProvider.activeDevices.toString(),
@@ -123,10 +115,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     StatusCard(
                       title: "Power",
-                      value: "${deviceProvider.currentPowerUsage.toStringAsFixed(0)} W",
+                      value:
+                      "${deviceProvider.currentPowerUsage.toStringAsFixed(0)} W",
                       icon: Icons.bolt,
                     ),
-
                     StatusCard(
                       title: "Security",
                       value: "Safe",
@@ -139,10 +131,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 PumpCard(
                   isRunning: deviceProvider.pumpRunning,
-
-                  selectedMinutes: deviceProvider.selectedPumpMinutes,
-
-                  remainingTime: deviceProvider.formattedRemainingTime,
+                  selectedMinutes:
+                  deviceProvider.selectedPumpMinutes,
+                  remainingTime:
+                  deviceProvider.formattedRemainingTime,
 
                   onDurationChanged: (value) {
                     if (value != null) {
@@ -178,13 +170,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: roomList.length,
-                  itemBuilder: (context, index){
+                  itemBuilder: (context, index) {
                     final room = roomList[index];
 
                     return RoomStatusCard(
                       roomName: room.name,
-                      totalDevices: deviceProvider.getActiveDeviceCount(room.name),
-                      activeDevices: deviceProvider.getActiveDeviceCount(room.name),
+                      totalDevices:
+                      deviceProvider.getActiveDeviceCount(room.name),
+                      activeDevices:
+                      deviceProvider.getActiveDeviceCount(room.name),
                     );
                   },
                 ),
@@ -199,12 +193,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 FilterChips(
                   selected: deviceProvider.selectedFilter,
-
                   onSelected: (value) {
                     deviceProvider.updateFilter(value);
                   },
-                  showFavoritesOnly: deviceProvider.showFavoriteOnly,
-
+                  showFavoritesOnly:
+                  deviceProvider.showFavoriteOnly,
                   onFavoriteTap: () {
                     deviceProvider.toggleFavoritesFilter();
                   },
@@ -214,23 +207,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 GridView.builder(
                   shrinkWrap: true,
-
                   physics: const NeverScrollableScrollPhysics(),
-
-                  itemCount: deviceProvider.filteredDevices.length,
-
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  itemCount:
+                  deviceProvider.filteredDevices.length,
+                  gridDelegate:
+                  const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-
                     crossAxisSpacing: 15,
-
                     mainAxisSpacing: 15,
-
                     childAspectRatio: 0.72,
                   ),
-
                   itemBuilder: (context, index) {
-                    final device = deviceProvider.filteredDevices[index];
+                    final device =
+                    deviceProvider.filteredDevices[index];
 
                     return DeviceCard(
                       deviceName: device.name,
@@ -245,9 +234,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       onTap: () {
                         Navigator.push(
                           context,
-
                           MaterialPageRoute(
-                            builder: (_) => DeviceDetailsScreen(device: device),
+                            builder: (_) =>
+                                DeviceDetailsScreen(device: device),
                           ),
                         );
                       },
@@ -261,12 +250,12 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
   @override
   void dispose() {
     _refreshTimer?.cancel();
     super.dispose();
   }
-
 
   IconData _getIcon(String iconName) {
     switch (iconName) {

@@ -1,94 +1,164 @@
 import 'package:flutter/material.dart';
-
 import 'package:provider/provider.dart';
-import 'package:smart_home/screens/automation/add_automation_screen.dart';
+
 import '../../providers/automation_provider.dart';
-import 'widgets/automation_card.dart';
 import '../../services/automation_service.dart';
+import 'add_automation_screen.dart';
+import 'widgets/automation_card.dart';
+
 class AutomationScreen extends StatefulWidget {
   const AutomationScreen({super.key});
 
   @override
   State<AutomationScreen> createState() => _AutomationScreenState();
 }
+
 class _AutomationScreenState extends State<AutomationScreen> {
+  final AutomationService _automationService = AutomationService();
+
   @override
   void initState() {
     super.initState();
 
-    Future.microtask((){
+    Future.microtask(() {
+      if (!mounted) return;
+
       Provider.of<AutomationProvider>(
         context,
-        listen:false,
+        listen: false,
       ).loadAutomations();
     });
   }
+
+  Future<void> _reloadAutomations() async {
+    final provider = Provider.of<AutomationProvider>(
+      context,
+      listen: false,
+    );
+
+    await provider.loadAutomations();
+  }
+
+  Future<bool> _toggleAutomation(
+      AutomationProvider provider,
+      String automationId,
+      ) async {
+    final response =
+    await _automationService.toggleAutomation(automationId);
+
+    if (response.statusCode == 200) {
+      await provider.loadAutomations();
+      return true;
+    }
+
+    return false;
+  }
+
+  Future<bool> _deleteAutomation(
+      AutomationProvider provider,
+      String automationId,
+      ) async {
+    final response =
+    await _automationService.deleteAutomation(automationId);
+
+    if (response.statusCode == 200) {
+      await provider.loadAutomations();
+      return true;
+    }
+
+    return false;
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+      ),
+    );
+  }
+
+  Future<void> _performDelete(
+      AutomationProvider provider,
+      String automationId,
+      ) async {
+    final success = await _deleteAutomation(
+      provider,
+      automationId,
+    );
+
+    if (!mounted) return;
+
+    if (!success) {
+      _showError(
+        "Failed to delete automation",
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AutomationProvider>(context);
 
     return Scaffold(
-
       appBar: AppBar(
         title: const Text("Automation"),
       ),
 
+      // ADD AUTOMATION
       floatingActionButton: FloatingActionButton(
-        onPressed: () async{
+        onPressed: () async {
           await Navigator.push(
             context,
-          MaterialPageRoute(
-            builder: (_) => const AddAutomationScreen(),
-          ),
+            MaterialPageRoute(
+              builder: (_) => const AddAutomationScreen(),
+            ),
           );
-          await provider.loadAutomations();
+
+          if (!mounted) return;
+
+          await _reloadAutomations();
         },
+        child: const Icon(Icons.add),
       ),
 
       body: provider.automations.isEmpty
-        ? const Center(
+          ? const Center(
         child: Text(
           "No automations yet",
           style: TextStyle(fontSize: 18),
         ),
       )
-      :ListView.builder(
+          : ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: provider.automations.length,
         itemBuilder: (context, index) {
-          final automation = provider.automations[index];
+          final automation =
+          provider.automations[index];
+
           return AutomationCard(
             automation: automation,
 
-            onToggle: (value) async {
+            // TOGGLE
+            onToggle: (_) async {
+              final success =
+              await _toggleAutomation(
+                provider,
+                automation.id,
+              );
 
-              final automationService = AutomationService();
+              if (!mounted) return;
 
-              final response =
-              await automationService.toggleAutomation(automation.id);
-
-              if (response.statusCode == 200) {
-
-                await provider.loadAutomations();
-
-              } else {
-
-                if (context.mounted) {
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Failed to update automation"),
-                    ),
-                  );
-
-                }
-
+              if (!success) {
+                _showError(
+                  "Failed to update automation",
+                );
               }
-
             },
 
+            // EDIT
             onEdit: () async {
-
               await Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -98,66 +168,56 @@ class _AutomationScreenState extends State<AutomationScreen> {
                 ),
               );
 
-              await provider.loadAutomations();
+              if (!mounted) return;
 
+              await _reloadAutomations();
             },
-            onDelete: (){
 
+            // DELETE
+            onDelete: () {
               showDialog(
-
                 context: context,
-                builder: (context) {
+                builder: (dialogContext) {
                   return AlertDialog(
-                    title: const Text("Delete Automation"),
+                    title: const Text(
+                      "Delete Automation",
+                    ),
 
                     content: Text(
-                      'Are you sure you want to delete "${automation.deviceName}"?',
+                      'Are you sure you want to delete '
+                          '"${automation.deviceName}"?',
                     ),
+
                     actions: [
+                      // CANCEL
                       TextButton(
                         onPressed: () {
-                          Navigator.pop(context);
+                          Navigator.of(
+                            dialogContext,
+                          ).pop();
                         },
                         child: const Text("Cancel"),
                       ),
+
+                      // DELETE
                       ElevatedButton(
-                        onPressed: () async {
+                        onPressed: () {
+                          // Close dialog first.
+                          Navigator.of(
+                            dialogContext,
+                          ).pop();
 
-                          final automationService = AutomationService();
-                          final response =
-                          await automationService
-                              .deleteAutomation(automation.id);
-
-                          if (response.statusCode == 200) {
-
-                            await provider.loadAutomations();
-
-                            if (context.mounted) {
-                              Navigator.pop(context);
-                            }
-
-                          } else {
-
-                            if (context.mounted) {
-
-                              Navigator.pop(context);
-
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("Failed to delete automation"),
-                                ),
-                              );
-
-                            }
-
-                          }
-
+                          // Perform delete separately.
+                          _performDelete(
+                            provider,
+                            automation.id,
+                          );
                         },
                         child: const Text("Delete"),
                       ),
                     ],
                   );
-                }
+                },
               );
             },
           );
