@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
+
 import '../../../core/theme/app_colors.dart';
 
 class PumpCard extends StatelessWidget {
   final bool isRunning;
   final int selectedMinutes;
   final ValueChanged<int?> onDurationChanged;
-
   final String remainingTime;
 
   final VoidCallback onStart;
   final VoidCallback onStop;
-
 
   const PumpCard({
     super.key,
@@ -20,24 +19,25 @@ class PumpCard extends StatelessWidget {
     required this.onStart,
     required this.onStop,
     required this.remainingTime,
-});
+  });
+
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(20),
-
       decoration: BoxDecoration(
         color: AppColors.cardColor,
         borderRadius: BorderRadius.circular(24),
       ),
-
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
-
         children: [
+          // =========================================
+          // PUMP ICON
+          // =========================================
 
-          // Pump Icon
           Center(
             child: Icon(
               Icons.water_drop,
@@ -48,7 +48,10 @@ class PumpCard extends StatelessWidget {
 
           const SizedBox(height: 15),
 
-          // Title
+          // =========================================
+          // TITLE
+          // =========================================
+
           const Center(
             child: Text(
               "Water Pump",
@@ -61,25 +64,26 @@ class PumpCard extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          // Status
+          // =========================================
+          // STATUS
+          // =========================================
+
           Row(
             children: [
-
               const Text(
                 "Status",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
               ),
-
               const Spacer(),
-
               Text(
                 isRunning ? "RUNNING" : "OFF",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color:
-                  isRunning ? Colors.green : Colors.red,
+                  color: isRunning
+                      ? Colors.green
+                      : Colors.red,
                 ),
               ),
             ],
@@ -87,51 +91,39 @@ class PumpCard extends StatelessWidget {
 
           const SizedBox(height: 20),
 
+          // =========================================
+          // REMAINING TIME
+          // =========================================
+
           Center(
-
             child: Column(
-
               children: [
-
                 const Text(
-
                   "Remaining Time",
-
                   style: TextStyle(
-
                     fontWeight: FontWeight.bold,
-
                   ),
-
                 ),
 
                 const SizedBox(height: 8),
 
                 Text(
-
                   remainingTime,
-
                   style: const TextStyle(
-
                     fontSize: 32,
-
                     fontWeight: FontWeight.bold,
-
                     color: Colors.blue,
-
                   ),
-
                 ),
-
               ],
-
             ),
-
           ),
 
           const SizedBox(height: 20),
 
-          const SizedBox(height: 20),
+          // =========================================
+          // DURATION
+          // =========================================
 
           const Text(
             "Duration",
@@ -142,84 +134,77 @@ class PumpCard extends StatelessWidget {
 
           const SizedBox(height: 10),
 
-          // Dropdown
+          // =========================================
+          // DURATION DROPDOWN
+          // =========================================
+
           Container(
             padding: const EdgeInsets.symmetric(
               horizontal: 15,
             ),
-
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(15),
               border: Border.all(
                 color: Colors.grey.shade400,
               ),
             ),
-
             child: DropdownButton<int>(
               value: selectedMinutes,
-
               isExpanded: true,
-
               underline: const SizedBox(),
-
               items: const [
-
                 DropdownMenuItem(
                   value: 5,
                   child: Text("5 Minutes"),
                 ),
-
                 DropdownMenuItem(
                   value: 10,
                   child: Text("10 Minutes"),
                 ),
-
                 DropdownMenuItem(
                   value: 15,
                   child: Text("15 Minutes"),
                 ),
-
                 DropdownMenuItem(
                   value: 20,
                   child: Text("20 Minutes"),
                 ),
-
                 DropdownMenuItem(
                   value: 30,
                   child: Text("30 Minutes"),
                 ),
               ],
-
-              onChanged: onDurationChanged,
+              onChanged: isRunning
+                  ? null
+                  : onDurationChanged,
             ),
           ),
 
           const SizedBox(height: 20),
 
+          // =========================================
+          // START / STOP BUTTON
+          // =========================================
+
           SizedBox(
             width: double.infinity,
-
             height: 50,
-
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor:
-                isRunning ? Colors.red : AppColors.primary,
-
+                backgroundColor: isRunning
+                    ? Colors.red
+                    : AppColors.primary,
                 shape: RoundedRectangleBorder(
                   borderRadius:
                   BorderRadius.circular(15),
                 ),
               ),
-
               onPressed:
               isRunning ? onStop : onStart,
-
               child: Text(
                 isRunning
                     ? "STOP PUMP"
                     : "START PUMP",
-
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,

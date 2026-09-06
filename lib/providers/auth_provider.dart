@@ -10,9 +10,9 @@ class AuthProvider extends ChangeNotifier {
 
   Map<String, dynamic>? _user;
 
-  // =====================================
+  // =========================================
   // GETTERS
-  // =====================================
+  // =========================================
 
   bool get isLoading => _isLoading;
 
@@ -24,20 +24,24 @@ class AuthProvider extends ChangeNotifier {
 
   bool get isLoggedIn => _user != null;
 
-  // =====================================
+  // =========================================
   // CONSTRUCTOR
-  // =====================================
+  // =========================================
 
   AuthProvider() {
-    loadSavedLogin();
+    _initialize();
   }
 
-  // =====================================
-  // LOAD SAVED LOGIN
-  // =====================================
+  // =========================================
+  // INITIALIZE AUTHENTICATION
+  // =========================================
 
-  Future<void> loadSavedLogin() async {
+  Future<void> _initialize() async {
     try {
+      debugPrint("=================================");
+      debugPrint("AUTH: Checking saved login...");
+      debugPrint("=================================");
+
       final data =
       await AuthService.loadSavedLogin();
 
@@ -45,18 +49,43 @@ class AuthProvider extends ChangeNotifier {
         _user = Map<String, dynamic>.from(
           data["user"],
         );
+
+        debugPrint("=================================");
+        debugPrint("AUTH: SAVED LOGIN FOUND");
+        debugPrint(
+          "AUTH USER: ${_user?["fullName"]}",
+        );
+        debugPrint(
+          "AUTH EMAIL: ${_user?["email"]}",
+        );
+        debugPrint(
+          "AUTH: User restored successfully",
+        );
+        debugPrint("=================================");
+      } else {
+        _user = null;
+
+        debugPrint("=================================");
+        debugPrint("AUTH: NO SAVED LOGIN FOUND");
+        debugPrint("=================================");
       }
     } catch (e) {
+      debugPrint("=================================");
+      debugPrint("AUTH INITIALIZATION ERROR");
+      debugPrint("ERROR: $e");
+      debugPrint("=================================");
+
       _user = null;
     } finally {
       _isInitializing = false;
+
       notifyListeners();
     }
   }
 
-  // =====================================
+  // =========================================
   // LOGIN
-  // =====================================
+  // =========================================
 
   Future<bool> login({
     required String email,
@@ -73,11 +102,26 @@ class AuthProvider extends ChangeNotifier {
         password: password,
       );
 
-      _user = data["user"] != null
-          ? Map<String, dynamic>.from(
+      if (data["user"] == null) {
+        _errorMessage =
+        "User information was not received.";
+
+        return false;
+      }
+
+      _user = Map<String, dynamic>.from(
         data["user"],
-      )
-          : null;
+      );
+
+      debugPrint("=================================");
+      debugPrint("AUTH: LOGIN SUCCESSFUL");
+      debugPrint(
+        "USER: ${_user?["fullName"]}",
+      );
+      debugPrint(
+        "EMAIL: ${_user?["email"]}",
+      );
+      debugPrint("=================================");
 
       return true;
     } catch (e) {
@@ -88,16 +132,21 @@ class AuthProvider extends ChangeNotifier {
         "",
       );
 
+      debugPrint(
+        "AUTH LOGIN ERROR: $_errorMessage",
+      );
+
       return false;
     } finally {
       _isLoading = false;
+
       notifyListeners();
     }
   }
 
-  // =====================================
+  // =========================================
   // REGISTER
-  // =====================================
+  // =========================================
 
   Future<bool> register({
     required String fullName,
@@ -128,29 +177,78 @@ class AuthProvider extends ChangeNotifier {
       return false;
     } finally {
       _isLoading = false;
+
       notifyListeners();
     }
   }
 
-  // =====================================
+  // =========================================
+  // DELETE ACCOUNT
+  // =========================================
+
+  Future<bool> deleteAccount({
+    required String password,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+
+    notifyListeners();
+
+    try {
+      await AuthService.deleteAccount(
+        password: password,
+      );
+
+      _user = null;
+
+      return true;
+    } catch (e) {
+      _errorMessage = e
+          .toString()
+          .replaceFirst(
+        "Exception: ",
+        "",
+      );
+
+      return false;
+    } finally {
+      _isLoading = false;
+
+      notifyListeners();
+    }
+  }
+
+  // =========================================
   // LOGOUT
-  // =====================================
+  // =========================================
 
   Future<void> logout() async {
-    await AuthService.logout();
+    try {
+      await AuthService.logout();
 
-    _user = null;
-    _errorMessage = null;
+      _user = null;
+      _errorMessage = null;
+
+      debugPrint("=================================");
+      debugPrint("AUTH: LOGOUT SUCCESSFUL");
+      debugPrint("AUTH: Local login data cleared");
+      debugPrint("=================================");
+    } catch (e) {
+      debugPrint(
+        "AUTH LOGOUT ERROR: $e",
+      );
+    }
 
     notifyListeners();
   }
 
-  // =====================================
+  // =========================================
   // CLEAR ERROR
-  // =====================================
+  // =========================================
 
   void clearError() {
     _errorMessage = null;
+
     notifyListeners();
   }
 }

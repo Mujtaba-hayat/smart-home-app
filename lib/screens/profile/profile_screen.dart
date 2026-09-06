@@ -1,25 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../members/invitation_screen.dart';
 
 import '../../providers/auth_provider.dart';
 import '../auth/login_screen.dart';
 import '../wifi_setup/wifi_setup_screen.dart';
+import '../members/members_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
-  void _logout(BuildContext context) {
+  // =========================================
+  // LOGOUT
+  // =========================================
+
+  Future<void> _logout(BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(
       context,
       listen: false,
     );
 
-    // Clear user + JWT token
-    authProvider.logout();
+    await authProvider.logout();
 
-    // Go to Login screen and remove all previous screens
-    Navigator.pushAndRemoveUntil(
-      context,
+    if (!context.mounted) {
+      return;
+    }
+
+    Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(
         builder: (_) => const LoginScreen(),
       ),
@@ -27,10 +34,70 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  // =========================================
+  // DELETE ACCOUNT
+  // =========================================
+
+  Future<void> _deleteAccount(
+      BuildContext context,
+      String password,
+      ) async {
+    final authProvider = Provider.of<AuthProvider>(
+      context,
+      listen: false,
+    );
+
+    final success = await authProvider.deleteAccount(
+      password: password,
+    );
+
+    if (!context.mounted) {
+      return;
+    }
+
+    if (!success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            authProvider.errorMessage ??
+                "Unable to delete account",
+          ),
+        ),
+      );
+
+      return;
+    }
+
+    // =========================================
+    // ACCOUNT SUCCESSFULLY DELETED
+    // =========================================
+
+    // Clear local login/token state first.
+    await authProvider.logout();
+
+    if (!context.mounted) {
+      return;
+    }
+
+    // Remove the entire authenticated navigation
+    // stack and open LoginScreen.
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => const LoginScreen(),
+      ),
+          (route) => false,
+    );
+  }
+
+  // =========================================
+  // BUILD
+  // =========================================
+
   @override
   Widget build(BuildContext context) {
-    final authProvider =
-    Provider.of<AuthProvider>(context);
+    final authProvider = Provider.of<AuthProvider>(
+      context,
+    );
 
     final user = authProvider.user;
 
@@ -44,7 +111,9 @@ class ProfileScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Profile"),
+        title: const Text(
+          "Profile",
+        ),
       ),
 
       body: ListView(
@@ -52,15 +121,16 @@ class ProfileScreen extends StatelessWidget {
 
         children: [
           // =========================================
-          // Profile Header
+          // PROFILE HEADER
           // =========================================
 
-          const SizedBox(height: 20),
+          const SizedBox(
+            height: 20,
+          ),
 
           const Center(
             child: CircleAvatar(
               radius: 45,
-
               child: Icon(
                 Icons.person,
                 size: 45,
@@ -68,7 +138,9 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 15),
+          const SizedBox(
+            height: 15,
+          ),
 
           Center(
             child: Text(
@@ -80,7 +152,9 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 5),
+          const SizedBox(
+            height: 5,
+          ),
 
           Center(
             child: Text(
@@ -91,10 +165,12 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 30),
+          const SizedBox(
+            height: 30,
+          ),
 
           // =========================================
-          // Wi-Fi Setup
+          // WI-FI SETUP
           // =========================================
 
           Card(
@@ -120,7 +196,7 @@ class ProfileScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
+                    builder: (_) =>
                     const WifiSetupScreen(),
                   ),
                 );
@@ -128,10 +204,91 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(
+            height: 12,
+          ),
+
+// =========================================
+// MEMBERS
+// =========================================
+
+          Card(
+            child: ListTile(
+              leading: const Icon(
+                Icons.people_outline,
+              ),
+
+              title: const Text(
+                "Members",
+              ),
+
+              subtitle: const Text(
+                "Manage Smart Home members and permissions",
+              ),
+
+              trailing: const Icon(
+                Icons.arrow_forward_ios,
+                size: 18,
+              ),
+
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                    const MembersScreen(),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          const SizedBox(
+            height: 12,
+          ),
+
 
           // =========================================
-          // About
+// INVITATIONS
+// =========================================
+
+          Card(
+            child: ListTile(
+              leading: const Icon(
+                Icons.mail_outline,
+              ),
+
+              title: const Text(
+                "Invitations",
+              ),
+
+              subtitle: const Text(
+                "View and respond to Smart Home invitations",
+              ),
+
+              trailing: const Icon(
+                Icons.arrow_forward_ios,
+                size: 18,
+              ),
+
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                    const MemberInvitationScreen(),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          const SizedBox(
+            height: 12,
+          ),
+
+          // =========================================
+          // ABOUT
           // =========================================
 
           Card(
@@ -171,8 +328,9 @@ class ProfileScreen extends StatelessWidget {
 
                   children: const [
                     Text(
-                      "IoT-based Smart Home Automation System "
-                          "using Flutter, Node.js and ESP32.",
+                      "IoT-based Smart Home Automation "
+                          "System using Flutter, Node.js "
+                          "and ESP32.",
                     ),
                   ],
                 );
@@ -180,7 +338,50 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(
+            height: 12,
+          ),
+
+          // =========================================
+          // DELETE ACCOUNT
+          // =========================================
+
+          Card(
+            child: ListTile(
+              leading: const Icon(
+                Icons.delete_forever,
+                color: Colors.red,
+              ),
+
+              title: const Text(
+                "Delete Account",
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              subtitle: const Text(
+                "Permanently delete your account and data",
+              ),
+
+              trailing: const Icon(
+                Icons.arrow_forward_ios,
+                size: 18,
+                color: Colors.red,
+              ),
+
+              onTap: () {
+                _showDeleteAccountDialog(
+                  context,
+                );
+              },
+            ),
+          ),
+
+          const SizedBox(
+            height: 12,
+          ),
 
           // =========================================
           // LOGOUT
@@ -206,7 +407,9 @@ class ProfileScreen extends StatelessWidget {
               ),
 
               onTap: () {
-                _showLogoutDialog(context);
+                _showLogoutDialog(
+                  context,
+                );
               },
             ),
           ),
@@ -216,10 +419,12 @@ class ProfileScreen extends StatelessWidget {
   }
 
   // =========================================
-  // Logout Confirmation
+  // LOGOUT CONFIRMATION
   // =========================================
 
-  void _showLogoutDialog(BuildContext context) {
+  void _showLogoutDialog(
+      BuildContext context,
+      ) {
     showDialog(
       context: context,
 
@@ -236,7 +441,9 @@ class ProfileScreen extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(dialogContext);
+                Navigator.of(
+                  dialogContext,
+                ).pop();
               },
 
               child: const Text(
@@ -245,10 +452,22 @@ class ProfileScreen extends StatelessWidget {
             ),
 
             ElevatedButton(
-              onPressed: () {
-                Navigator.pop(dialogContext);
+              onPressed: () async {
+                Navigator.of(
+                  dialogContext,
+                ).pop();
 
-                _logout(context);
+                await Future<void>.delayed(
+                  Duration.zero,
+                );
+
+                if (!context.mounted) {
+                  return;
+                }
+
+                await _logout(
+                  context,
+                );
               },
 
               child: const Text(
@@ -256,6 +475,161 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  // =========================================
+  // DELETE ACCOUNT DIALOG
+  // =========================================
+
+  void _showDeleteAccountDialog(
+      BuildContext context,
+      ) {
+    final passwordController =
+    TextEditingController();
+
+    bool obscurePassword = true;
+
+    showDialog(
+      context: context,
+
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (
+              dialogContext,
+              setState,
+              ) {
+            return AlertDialog(
+              title: const Text(
+                "Delete Account",
+              ),
+
+              content: Column(
+                mainAxisSize:
+                MainAxisSize.min,
+
+                children: [
+                  const Text(
+                    "This action is permanent. "
+                        "Your account, Smart Home and "
+                        "all associated devices will be deleted.",
+                  ),
+
+                  const SizedBox(
+                    height: 20,
+                  ),
+
+                  TextField(
+                    controller:
+                    passwordController,
+
+                    obscureText:
+                    obscurePassword,
+
+                    decoration:
+                    InputDecoration(
+                      labelText:
+                      "Current Password",
+
+                      border:
+                      const OutlineInputBorder(),
+
+                      suffixIcon:
+                      IconButton(
+                        icon: Icon(
+                          obscurePassword
+                              ? Icons.visibility
+                              : Icons
+                              .visibility_off,
+                        ),
+
+                        onPressed: () {
+                          setState(() {
+                            obscurePassword =
+                            !obscurePassword;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(
+                      dialogContext,
+                    ).pop();
+
+                    passwordController.dispose();
+                  },
+
+                  child: const Text(
+                    "CANCEL",
+                  ),
+                ),
+
+                ElevatedButton(
+                  style:
+                  ElevatedButton.styleFrom(
+                    backgroundColor:
+                    Colors.red,
+
+                    foregroundColor:
+                    Colors.white,
+                  ),
+
+                  onPressed: () async {
+                    final password =
+                    passwordController
+                        .text
+                        .trim();
+
+                    if (password.isEmpty) {
+                      ScaffoldMessenger.of(
+                        dialogContext,
+                      ).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            "Please enter your password",
+                          ),
+                        ),
+                      );
+
+                      return;
+                    }
+
+                    Navigator.of(
+                      dialogContext,
+                    ).pop();
+
+                    await Future<void>.delayed(
+                      Duration.zero,
+                    );
+
+                    if (!context.mounted) {
+                      passwordController.dispose();
+                      return;
+                    }
+
+                    await _deleteAccount(
+                      context,
+                      password,
+                    );
+
+                    passwordController.dispose();
+                  },
+
+                  child: const Text(
+                    "DELETE ACCOUNT",
+                  ),
+                ),
+              ],
+            );
+          },
         );
       },
     );

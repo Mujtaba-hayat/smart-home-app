@@ -3,8 +3,12 @@ import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
 import '../../providers/smart_home_provider.dart';
+
 import '../main_navigation_screen.dart';
 import '../smart_home/create_smart_home_screen.dart';
+
+import 'register_screen.dart';
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({
@@ -34,6 +38,10 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  // ====================================================
+  // LOGIN
+  // ====================================================
+
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -51,12 +59,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (!mounted) return;
 
+    // ==================================================
+    // LOGIN FAILED
+    // ==================================================
+
     if (!success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             authProvider.errorMessage ??
-                "Login failed",
+                "Invalid email or password",
           ),
         ),
       );
@@ -64,9 +76,9 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    // =========================================
-    // CHECK SMART HOME
-    // =========================================
+    // ==================================================
+    // LOGIN SUCCESSFUL
+    // ==================================================
 
     final smartHomeProvider =
     Provider.of<SmartHomeProvider>(
@@ -79,25 +91,26 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (!mounted) return;
 
-    // =========================================
+    // ==================================================
     // SMART HOME EXISTS
-    // =========================================
+    // ==================================================
 
     if (hasSmartHome) {
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
           builder: (_) =>
           const MainNavigationScreen(),
         ),
+            (route) => false,
       );
 
       return;
     }
 
-    // =========================================
-    // SMART HOME DOES NOT EXIST
-    // =========================================
+    // ==================================================
+    // SMART HOME ERROR
+    // ==================================================
 
     if (smartHomeProvider.errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -111,6 +124,10 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    // ==================================================
+    // NO SMART HOME
+    // ==================================================
+
     final created = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
@@ -121,20 +138,25 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (!mounted) return;
 
-    // =========================================
+    // ==================================================
     // SMART HOME CREATED
-    // =========================================
+    // ==================================================
 
     if (created == true) {
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
           builder: (_) =>
           const MainNavigationScreen(),
         ),
+            (route) => false,
       );
     }
   }
+
+  // ====================================================
+  // BUILD
+  // ====================================================
 
   @override
   Widget build(BuildContext context) {
@@ -160,12 +182,20 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 const SizedBox(height: 40),
 
+                // ==================================================
+                // ICON
+                // ==================================================
+
                 const Icon(
-                  Icons.home,
-                  size: 80,
+                  Icons.home_rounded,
+                  size: 85,
                 ),
 
                 const SizedBox(height: 20),
+
+                // ==================================================
+                // TITLE
+                // ==================================================
 
                 const Text(
                   "Smart Home",
@@ -190,15 +220,25 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 40),
 
+                // ==================================================
+                // EMAIL
+                // ==================================================
+
                 TextFormField(
                   controller: _emailController,
 
                   keyboardType:
                   TextInputType.emailAddress,
 
+                  textInputAction:
+                  TextInputAction.next,
+
                   decoration:
                   const InputDecoration(
                     labelText: "Email",
+
+                    hintText:
+                    "Enter your email",
 
                     prefixIcon:
                     Icon(Icons.email),
@@ -223,6 +263,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 20),
 
+                // ==================================================
+                // PASSWORD
+                // ==================================================
+
                 TextFormField(
                   controller:
                   _passwordController,
@@ -230,9 +274,21 @@ class _LoginScreenState extends State<LoginScreen> {
                   obscureText:
                   _obscurePassword,
 
+                  textInputAction:
+                  TextInputAction.done,
+
+                  onFieldSubmitted: (_) {
+                    if (!authProvider.isLoading) {
+                      _login();
+                    }
+                  },
+
                   decoration:
                   InputDecoration(
                     labelText: "Password",
+
+                    hintText:
+                    "Enter your password",
 
                     prefixIcon:
                     const Icon(Icons.lock),
@@ -267,7 +323,36 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                 ),
 
-                const SizedBox(height: 30),
+                // ==================================================
+                // FORGOT PASSWORD
+                // ==================================================
+
+                Align(
+                  alignment:
+                  Alignment.centerRight,
+
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                          const ForgotPasswordScreen(),
+                        ),
+                      );
+                    },
+
+                    child: const Text(
+                      "Forgot Password?",
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                // ==================================================
+                // LOGIN BUTTON
+                // ==================================================
 
                 SizedBox(
                   height: 55,
@@ -287,17 +372,54 @@ class _LoginScreenState extends State<LoginScreen> {
                       child:
                       CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color:
+                        Colors.white,
                       ),
                     )
                         : const Text(
                       "LOGIN",
+
                       style:
                       TextStyle(
                         fontSize: 16,
+                        fontWeight:
+                        FontWeight.bold,
                       ),
                     ),
                   ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // ==================================================
+                // REGISTER
+                // ==================================================
+
+                Row(
+                  mainAxisAlignment:
+                  MainAxisAlignment.center,
+
+                  children: [
+                    const Text(
+                      "Don't have an account? ",
+                    ),
+
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                            const RegisterScreen(),
+                          ),
+                        );
+                      },
+
+                      child: const Text(
+                        "Sign Up",
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

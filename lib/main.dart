@@ -7,6 +7,8 @@ import 'providers/device_provider.dart';
 import 'providers/automation_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/smart_home_provider.dart';
+import 'providers/member_provider.dart';
+import 'providers/sensor_provider.dart';
 
 import 'screens/splash/splash_screen.dart';
 
@@ -52,6 +54,22 @@ class SmartHomeApp extends StatelessWidget {
 
         ChangeNotifierProvider(
           create: (_) => SmartHomeProvider(),
+        ),
+
+        // =========================================
+        // MEMBER PROVIDER
+        // =========================================
+
+        ChangeNotifierProvider(
+          create: (_) => MemberProvider(),
+        ),
+
+        // =========================================
+        // SENSOR PROVIDER
+        // =========================================
+
+        ChangeNotifierProvider(
+          create: (_) => SensorProvider(),
         ),
       ],
 

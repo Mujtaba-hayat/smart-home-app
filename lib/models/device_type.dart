@@ -3,6 +3,7 @@ enum DeviceType {
   fan,
   socket,
   appliance,
+  alarm,
   other,
   pump,
 }

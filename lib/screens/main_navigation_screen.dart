@@ -12,32 +12,36 @@ class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
 
   @override
-  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
+  State<MainNavigationScreen> createState() =>
+      _MainNavigationScreenState();
 }
 
-class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  int currentIndex = 0;
+class _MainNavigationScreenState
+    extends State<MainNavigationScreen> {
+  int _currentIndex = 0;
 
-  final List<Widget>screens = [
+  final List<Widget> _screens = [
     const HomeScreen(),
     const RoomsScreen(),
     const AutomationScreen(),
     const AnalyticsScreen(),
     const ProfileScreen(),
-
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: screens[currentIndex],
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _screens,
+      ),
 
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: currentIndex,
+        currentIndex: _currentIndex,
 
-        onTap: (index){
+        onTap: (index) {
           setState(() {
-            currentIndex = index;
+            _currentIndex = index;
           });
         },
 
@@ -51,7 +55,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
         items: const [
           BottomNavigationBarItem(
-              icon: Icon(Icons.home),
+            icon: Icon(Icons.home),
             label: "Home",
           ),
 
@@ -72,7 +76,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
-            label: "profile",
+            label: "Profile",
           ),
         ],
       ),
