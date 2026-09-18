@@ -3,107 +3,128 @@ import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../providers/auth_provider.dart';
-import '../../profile/profile_screen.dart';
+import '../../notifications/notifications_screen.dart';
 
 class GreetingSection extends StatelessWidget {
-  const GreetingSection({super.key});
+const GreetingSection({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
+@override
+Widget build(BuildContext context) {
+final authProvider =
+Provider.of<AuthProvider>(context);
 
-    final user = authProvider.user;
+final user = authProvider.user;
 
-    final fullName =
-        user?["fullName"]?.toString().trim() ?? "";
+final fullName =
+user?["fullName"]?.toString().trim() ?? "";
 
-    final userName =
-    fullName.isNotEmpty ? fullName : "User";
+final userName =
+fullName.isNotEmpty ? fullName : "User";
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // ====================================================
-        // MENU BUTTON
-        // ====================================================
+return Row(
+crossAxisAlignment:
+CrossAxisAlignment.center,
 
-        Builder(
-          builder: (context) {
-            return IconButton(
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-              icon: const Icon(
-                Icons.menu_rounded,
-                size: 28,
-              ),
-              tooltip: "Menu",
-            );
-          },
-        ),
+children: [
+// ====================================================
+// MENU BUTTON
+// ====================================================
 
-        const SizedBox(width: 4),
+Builder(
+builder: (context) {
+return IconButton(
+onPressed: () {
+Scaffold.of(context).openDrawer();
+},
 
-        // ====================================================
-        // GREETING
-        // ====================================================
+icon: const Icon(
+Icons.menu_rounded,
+size: 28,
+),
 
-        Expanded(
-          child: Column(
-            crossAxisAlignment:
-            CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Hello $userName 👋",
-                maxLines: 1,
-                overflow:
-                TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 23,
-                  fontWeight:
-                  FontWeight.bold,
-                ),
-              ),
+tooltip: "Menu",
+);
+},
+),
 
-              const SizedBox(height: 5),
+const SizedBox(
+width: 4,
+),
 
-              const Text(
-                "Welcome Back",
-                style: TextStyle(
-                  color:
-                  AppColors.textSecondary,
-                  fontSize: 15,
-                ),
-              ),
-            ],
-          ),
-        ),
+// ====================================================
+// GREETING
+// ====================================================
 
-        // ====================================================
-        // PROFILE BUTTON
-        // ====================================================
+Expanded(
+child: Column(
+crossAxisAlignment:
+CrossAxisAlignment.start,
 
-        GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) =>
-                const ProfileScreen(),
-              ),
-            );
-          },
-          child: const CircleAvatar(
-            radius: 26,
-            backgroundColor:
-            AppColors.primary,
-            child: Icon(
-              Icons.person,
-              color: Colors.white,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+children: [
+Text(
+"Hello $userName 👋",
+
+maxLines: 1,
+
+overflow:
+TextOverflow.ellipsis,
+
+style: const TextStyle(
+fontSize: 23,
+fontWeight:
+FontWeight.bold,
+),
+),
+
+const SizedBox(
+height: 5,
+),
+
+const Text(
+"Welcome Back",
+
+style: TextStyle(
+color:
+AppColors.textSecondary,
+fontSize: 15,
+),
+),
+],
+),
+),
+
+// ====================================================
+// NOTIFICATION BUTTON
+// ====================================================
+
+GestureDetector(
+onTap: () {
+Navigator.push(
+context,
+MaterialPageRoute(
+builder: (_) =>
+const NotificationsScreen(),
+),
+);
+},
+
+child: Container(
+width: 52,
+height: 52,
+
+decoration: BoxDecoration(
+color: AppColors.primary,
+shape: BoxShape.circle,
+),
+
+child: const Icon(
+Icons.notifications_rounded,
+color: Colors.white,
+size: 27,
+),
+),
+),
+],
+);
+}
 }

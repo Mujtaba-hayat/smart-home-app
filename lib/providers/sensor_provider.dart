@@ -6,204 +6,227 @@ import '../api/api_service.dart';
 import '../models/sensor_model.dart';
 
 class SensorProvider extends ChangeNotifier {
-  // ====================================================
-  // SENSOR DATA
-  // ====================================================
+// ====================================================
+// SENSOR DATA
+// ====================================================
 
-  SensorModel? _sensor;
+SensorModel? _sensor;
 
-  SensorModel? get sensor => _sensor;
+SensorModel? get sensor => _sensor;
 
-  // ====================================================
-  // LOADING
-  // ====================================================
+// ====================================================
+// LOADING
+// ====================================================
 
-  bool _isLoading = false;
+bool _isLoading = false;
 
-  bool get isLoading => _isLoading;
+bool get isLoading => _isLoading;
 
-  // ====================================================
-  // ERROR
-  // ====================================================
+// ====================================================
+// ERROR
+// ====================================================
 
-  String? _errorMessage;
+String? _errorMessage;
 
-  String? get errorMessage => _errorMessage;
+String? get errorMessage => _errorMessage;
 
-  // ====================================================
-  // AUTO REFRESH
-  // ====================================================
+// ====================================================
+// AUTO REFRESH
+// ====================================================
 
-  Timer? _refreshTimer;
+Timer? _refreshTimer;
 
-  // ====================================================
-  // SENSOR GETTERS
-  // ====================================================
+// ====================================================
+// SENSOR GETTERS
+// ====================================================
 
-  double? get temperature =>
-      _sensor?.temperature;
+double? get temperature =>
+_sensor?.temperature;
 
-  double? get humidity =>
-      _sensor?.humidity;
+double? get humidity =>
+_sensor?.humidity;
 
-  String? get doorStatus =>
-      _sensor?.doorStatus;
+String? get doorStatus =>
+_sensor?.doorStatus;
 
-  bool get isDoorOpen =>
-      _sensor?.isDoorOpen ?? false;
+bool get isDoorOpen =>
+_sensor?.isDoorOpen ?? false;
 
-  bool get esp32Connected =>
-      _sensor?.isConnected ?? false;
+bool get esp32Connected =>
+_sensor?.isConnected ?? false;
 
-  String? get esp32Id =>
-      _sensor?.esp32Id;
+String? get esp32Id =>
+_sensor?.esp32Id;
 
-  String? get smartHomeName =>
-      _sensor?.smartHomeName;
+String? get smartHomeName =>
+_sensor?.smartHomeName;
 
-  DateTime? get sensorLastUpdated =>
-      _sensor?.sensorLastUpdated;
+DateTime? get sensorLastUpdated =>
+_sensor?.sensorLastUpdated;
 
-  DateTime? get lastSeen =>
-      _sensor?.lastSeen;
+DateTime? get lastSeen =>
+_sensor?.lastSeen;
 
-  // ====================================================
-  // FETCH SENSOR DATA
-  // ====================================================
+// ====================================================
+// FETCH SENSOR DATA
+//
+// Backend:
+//
+// GET /user/sensors
+//
+// The backend identifies the Smart Home using
+// the authenticated user's token.
+//
+// Therefore, ESP32 ID is NOT required here.
+// ====================================================
 
-  Future<void> fetchSensorData(
-      String esp32Id,
-      ) async {
-    if (esp32Id.trim().isEmpty) {
-      _errorMessage =
-      "ESP32 ID is missing.";
+Future<void> fetchSensorData() async {
+_isLoading = true;
+_errorMessage = null;
 
-      notifyListeners();
+notifyListeners();
 
-      return;
-    }
+try {
+debugPrint(
+"=================================",
+);
 
-    _isLoading = true;
-    _errorMessage = null;
+debugPrint(
+"FETCH SENSOR DATA",
+);
 
-    notifyListeners();
+debugPrint(
+"Using authenticated user's Smart Home",
+);
 
-    try {
-      debugPrint(
-        "=================================",
-      );
+debugPrint(
+"=================================",
+);
 
-      debugPrint(
-        "FETCH SENSOR DATA",
-      );
+// ==================================================
+// GET SENSOR DATA
+// ==================================================
 
-      debugPrint(
-        "ESP32 ID: $esp32Id",
-      );
+final data =
+await ApiService.getSensorData();
 
-      debugPrint(
-        "=================================",
-      );
+// ==================================================
+// CONVERT RESPONSE TO MODEL
+// ==================================================
 
-      final data =
-      await ApiService.getSensorData(
-        esp32Id,
-      );
+_sensor =
+SensorModel.fromJson(
+data,
+);
 
-      _sensor =
-          SensorModel.fromJson(
-            data,
-          );
+// ==================================================
+// DEBUG INFORMATION
+// ==================================================
 
-      debugPrint(
-        "Temperature: ${_sensor?.temperature}",
-      );
+debugPrint(
+"Temperature: ${_sensor?.temperature}",
+);
 
-      debugPrint(
-        "Humidity: ${_sensor?.humidity}",
-      );
+debugPrint(
+"Humidity: ${_sensor?.humidity}",
+);
 
-      debugPrint(
-        "Door: ${_sensor?.doorStatus}",
-      );
+debugPrint(
+"Door: ${_sensor?.doorStatus}",
+);
 
-      debugPrint(
-        "ESP32 Status: ${_sensor?.status}",
-      );
+debugPrint(
+"ESP32 ID: ${_sensor?.esp32Id}",
+);
 
-      debugPrint(
-        "=================================",
-      );
-    } catch (e) {
-      debugPrint(
-        "FETCH SENSOR DATA ERROR: $e",
-      );
+debugPrint(
+"Smart Home: ${_sensor?.smartHomeName}",
+);
 
-      _errorMessage =
-      "Unable to load sensor data: $e";
-    } finally {
-      _isLoading = false;
+debugPrint(
+"ESP32 Status: ${_sensor?.status}",
+);
 
-      notifyListeners();
-    }
-  }
+debugPrint(
+"Last Seen: ${_sensor?.lastSeen}",
+);
 
-  // ====================================================
-  // START AUTO REFRESH
-  // ====================================================
+debugPrint(
+"=================================",
+);
+} catch (e) {
+debugPrint(
+"FETCH SENSOR DATA ERROR: $e",
+);
 
-  void startAutoRefresh(
-      String esp32Id,
-      ) {
-    stopAutoRefresh();
+_errorMessage =
+"Unable to load sensor data: $e";
+} finally {
+_isLoading = false;
 
-    fetchSensorData(
-      esp32Id,
-    );
+notifyListeners();
+}
+}
 
-    _refreshTimer =
-        Timer.periodic(
-          const Duration(
-            seconds: 5,
-          ),
-              (_) {
-            fetchSensorData(
-              esp32Id,
-            );
-          },
-        );
-  }
+// ====================================================
+// START AUTO REFRESH
+//
+// Sensor data refreshes every 5 seconds.
+// ====================================================
 
-  // ====================================================
-  // STOP AUTO REFRESH
-  // ====================================================
+void startAutoRefresh() {
+// Stop any existing timer first.
+stopAutoRefresh();
 
-  void stopAutoRefresh() {
-    _refreshTimer?.cancel();
+// Fetch immediately.
+fetchSensorData();
 
-    _refreshTimer = null;
-  }
+// Then refresh every 5 seconds.
+_refreshTimer =
+Timer.periodic(
+const Duration(
+seconds: 5,
+),
+(_) {
+fetchSensorData();
+},
+);
+}
 
-  // ====================================================
-  // CLEAR SENSOR DATA
-  // ====================================================
+// ====================================================
+// STOP AUTO REFRESH
+// ====================================================
 
-  void clearSensorData() {
-    _sensor = null;
+void stopAutoRefresh() {
+_refreshTimer?.cancel();
 
-    _errorMessage = null;
+_refreshTimer = null;
+}
 
-    notifyListeners();
-  }
+// ====================================================
+// CLEAR SENSOR DATA
+// ====================================================
 
-  // ====================================================
-  // DISPOSE
-  // ====================================================
+void clearSensorData() {
+stopAutoRefresh();
 
-  @override
-  void dispose() {
-    stopAutoRefresh();
+_sensor = null;
 
-    super.dispose();
-  }
+_errorMessage = null;
+
+_isLoading = false;
+
+notifyListeners();
+}
+
+// ====================================================
+// DISPOSE
+// ====================================================
+
+@override
+void dispose() {
+stopAutoRefresh();
+
+super.dispose();
+}
 }

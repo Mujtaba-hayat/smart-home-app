@@ -12,8 +12,17 @@ class DeviceModel {
   // ====================================================
   // RELAY
   // ====================================================
+  //
+  // R1-R6 = Normal devices
+  // R7    = Door Alarm (reserved)
+  // R8    = Water Pump (reserved, not a DeviceModel)
+  //
+  // R7 should normally be represented by the
+  // backend "alarm" object instead of a normal device.
+  //
+  // ====================================================
 
-  final String relay; // R1-R7
+  final String relay;
 
   // ====================================================
   // DEVICE INFORMATION

@@ -27,12 +27,10 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() =>
-      _HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState
-    extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> {
   Timer? _refreshTimer;
 
   @override
@@ -43,8 +41,7 @@ class _HomeScreenState
     // INITIAL REFRESH
     // ====================================================
 
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
       _refreshHomeData();
@@ -71,26 +68,16 @@ class _HomeScreenState
   Future<void> _refreshHomeData() async {
     if (!mounted) return;
 
-    debugPrint(
-      "=================================",
-    );
+    debugPrint("=================================");
+    debugPrint("HOME SCREEN REFRESH");
+    debugPrint("=================================");
 
-    debugPrint(
-      "HOME SCREEN REFRESH",
-    );
-
-    debugPrint(
-      "=================================",
-    );
-
-    final deviceProvider =
-    Provider.of<DeviceProvider>(
+    final deviceProvider = Provider.of<DeviceProvider>(
       context,
       listen: false,
     );
 
-    final smartHomeProvider =
-    Provider.of<SmartHomeProvider>(
+    final smartHomeProvider = Provider.of<SmartHomeProvider>(
       context,
       listen: false,
     );
@@ -109,13 +96,8 @@ class _HomeScreenState
 
     if (!mounted) return;
 
-    debugPrint(
-      "=================================",
-    );
-
-    debugPrint(
-      "HOME DATA REFRESH COMPLETE",
-    );
+    debugPrint("=================================");
+    debugPrint("HOME DATA REFRESH COMPLETE");
 
     debugPrint(
       "SMART HOME: "
@@ -147,19 +129,21 @@ class _HomeScreenState
           "${smartHomeProvider.doorStatus}",
     );
 
+    // ==================================================
+    // ALARM
+    // ==================================================
+
     debugPrint(
       "ALARM ENABLED: "
-          "${smartHomeProvider.alarmEnabled}",
+          "${deviceProvider.alarmEnabled}",
     );
 
     debugPrint(
-      "ALARM STATUS: "
-          "${smartHomeProvider.alarmStatus}",
+      "ALARM RUNNING: "
+          "${deviceProvider.alarmRunning}",
     );
 
-    debugPrint(
-      "=================================",
-    );
+    debugPrint("=================================");
   }
 
   // ====================================================
@@ -168,44 +152,39 @@ class _HomeScreenState
 
   @override
   Widget build(BuildContext context) {
-    final deviceProvider =
-    Provider.of<DeviceProvider>(context);
+    final deviceProvider = Provider.of<DeviceProvider>(context);
 
-    final smartHomeProvider =
-    Provider.of<SmartHomeProvider>(
-      context,
-    );
+    final smartHomeProvider = Provider.of<SmartHomeProvider>(context);
 
-    final bool isConnected =
-        smartHomeProvider.esp32Connected;
+    final bool isConnected = smartHomeProvider.esp32Connected;
 
     // ====================================================
     // ONLINE DEVICES
     // ====================================================
 
-    final int onlineDevices =
-    isConnected
-        ? deviceProvider.devices.length
-        : 0;
+    final int onlineDevices = isConnected ? deviceProvider.devices.length : 0;
 
     // ====================================================
     // SENSOR VALUES
     // ====================================================
 
-    final double? temperature =
-        smartHomeProvider.temperature;
+    final double? temperature = smartHomeProvider.temperature;
 
-    final double? humidity =
-        smartHomeProvider.humidity;
+    final double? humidity = smartHomeProvider.humidity;
 
-    final String doorStatus =
-        smartHomeProvider.doorStatus;
+    final String doorStatus = smartHomeProvider.doorStatus;
 
-    final bool doorOpen =
-        smartHomeProvider.doorOpen;
+    final bool doorOpen = smartHomeProvider.doorOpen;
 
-    final bool alarmEnabled =
-        smartHomeProvider.alarmEnabled;
+    // ====================================================
+    // ALARM
+    //
+    // Alarm state comes from DeviceProvider.
+    // ====================================================
+
+    final bool alarmEnabled = deviceProvider.alarmEnabled;
+
+    final bool alarmRunning = deviceProvider.alarmRunning;
 
     return Scaffold(
       drawer: const HomeMenu(),
@@ -214,21 +193,16 @@ class _HomeScreenState
       // ADD DEVICE
       // ==================================================
 
-      floatingActionButton:
-      FloatingActionButton(
-        backgroundColor:
-        AppColors.primary,
-
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.primary,
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) =>
-              const AddDeviceScreen(),
+              builder: (_) => const AddDeviceScreen(),
             ),
           );
         },
-
         child: const Icon(
           Icons.add,
         ),
@@ -237,15 +211,9 @@ class _HomeScreenState
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: _refreshHomeData,
-
-          child:
-          SingleChildScrollView(
-            physics:
-            const AlwaysScrollableScrollPhysics(),
-
-            padding:
-            const EdgeInsets.all(20),
-
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(20),
             child: Column(
               children: [
                 // ====================================================
@@ -263,42 +231,27 @@ class _HomeScreenState
                 // ====================================================
 
                 Container(
-                  width:
-                  double.infinity,
-
-                  padding:
-                  const EdgeInsets
-                      .symmetric(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 14,
                   ),
-
-                  decoration:
-                  BoxDecoration(
-                    color:
-                    AppColors.cardColor,
-
-                    borderRadius:
-                    BorderRadius.circular(
+                  decoration: BoxDecoration(
+                    color: AppColors.cardColor,
+                    borderRadius: BorderRadius.circular(
                       18,
                     ),
-
-                    border:
-                    Border.all(
+                    border: Border.all(
                       color: isConnected
-                          ? Colors.green
-                          .withValues(
+                          ? Colors.green.withValues(
                         alpha: 0.55,
                       )
-                          : Colors.red
-                          .withValues(
+                          : Colors.red.withValues(
                         alpha: 0.55,
                       ),
-
                       width: 1,
                     ),
                   ),
-
                   child: Row(
                     children: [
                       // ================================================
@@ -308,30 +261,17 @@ class _HomeScreenState
                       Container(
                         width: 46,
                         height: 46,
-
-                        decoration:
-                        BoxDecoration(
-                          color: AppColors
-                              .primary
-                              .withValues(
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(
                             alpha: 0.12,
                           ),
-
-                          borderRadius:
-                          BorderRadius
-                              .circular(
+                          borderRadius: BorderRadius.circular(
                             14,
                           ),
                         ),
-
                         child: Icon(
-                          Icons
-                              .home_rounded,
-
-                          color:
-                          AppColors
-                              .primary,
-
+                          Icons.home_rounded,
+                          color: AppColors.primary,
                           size: 26,
                         ),
                       ),
@@ -345,55 +285,30 @@ class _HomeScreenState
                       // ================================================
 
                       Expanded(
-                        child:
-                        Column(
-                          crossAxisAlignment:
-                          CrossAxisAlignment
-                              .start,
-
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              smartHomeProvider
-                                  .smartHomeName,
-
+                              smartHomeProvider.smartHomeName,
                               maxLines: 1,
-
-                              overflow:
-                              TextOverflow
-                                  .ellipsis,
-
-                              style:
-                              const TextStyle(
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
                                 fontSize: 16,
-                                fontWeight:
-                                FontWeight
-                                    .bold,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-
                             const SizedBox(
                               height: 4,
                             ),
-
-                            if (smartHomeProvider
-                                .esp32Id !=
-                                null)
+                            if (smartHomeProvider.esp32Id != null)
                               Text(
                                 "ESP32: "
                                     "${smartHomeProvider.esp32Id}",
-
                                 maxLines: 1,
-
-                                overflow:
-                                TextOverflow
-                                    .ellipsis,
-
-                                style:
-                                const TextStyle(
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
                                   fontSize: 12,
-                                  color:
-                                  Colors
-                                      .grey,
+                                  color: Colors.grey,
                                 ),
                               ),
                           ],
@@ -409,78 +324,42 @@ class _HomeScreenState
                       // ================================================
 
                       Container(
-                        padding:
-                        const EdgeInsets
-                            .symmetric(
+                        padding: const EdgeInsets.symmetric(
                           horizontal: 9,
                           vertical: 5,
                         ),
-
-                        decoration:
-                        BoxDecoration(
+                        decoration: BoxDecoration(
                           color: isConnected
-                              ? Colors.green
-                              .withValues(
+                              ? Colors.green.withValues(
                             alpha: 0.12,
                           )
-                              : Colors.red
-                              .withValues(
+                              : Colors.red.withValues(
                             alpha: 0.12,
                           ),
-
-                          borderRadius:
-                          BorderRadius
-                              .circular(
+                          borderRadius: BorderRadius.circular(
                             20,
                           ),
                         ),
-
                         child: Row(
-                          mainAxisSize:
-                          MainAxisSize
-                              .min,
-
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Container(
                               width: 7,
                               height: 7,
-
-                              decoration:
-                              BoxDecoration(
-                                color: isConnected
-                                    ? Colors
-                                    .green
-                                    : Colors
-                                    .red,
-
-                                shape:
-                                BoxShape
-                                    .circle,
+                              decoration: BoxDecoration(
+                                color: isConnected ? Colors.green : Colors.red,
+                                shape: BoxShape.circle,
                               ),
                             ),
-
                             const SizedBox(
                               width: 5,
                             ),
-
                             Text(
-                              isConnected
-                                  ? "Connected"
-                                  : "Disconnected",
-
-                              style:
-                              TextStyle(
+                              isConnected ? "Connected" : "Disconnected",
+                              style: TextStyle(
                                 fontSize: 11,
-
-                                fontWeight:
-                                FontWeight
-                                    .w600,
-
-                                color: isConnected
-                                    ? Colors
-                                    .green
-                                    : Colors
-                                    .red,
+                                fontWeight: FontWeight.w600,
+                                color: isConnected ? Colors.green : Colors.red,
                               ),
                             ),
                           ],
@@ -499,24 +378,12 @@ class _HomeScreenState
                 // ====================================================
 
                 _buildSensorCard(
-                  temperature:
-                  temperature,
-
-                  humidity:
-                  humidity,
-
-                  doorStatus:
-                  doorStatus,
-
-                  doorOpen:
-                  doorOpen,
-
-                  isConnected:
-                  isConnected,
-
-                  lastUpdated:
-                  smartHomeProvider
-                      .sensorLastUpdated,
+                  temperature: temperature,
+                  humidity: humidity,
+                  doorStatus: doorStatus,
+                  doorOpen: doorOpen,
+                  isConnected: isConnected,
+                  lastUpdated: smartHomeProvider.sensorLastUpdated,
                 ),
 
                 const SizedBox(
@@ -531,25 +398,13 @@ class _HomeScreenState
                   children: [
                     StatusCard(
                       title: "Online",
-
-                      value:
-                      onlineDevices
-                          .toString(),
-
-                      icon:
-                      Icons.wifi,
+                      value: onlineDevices.toString(),
+                      icon: Icons.wifi,
                     ),
-
                     StatusCard(
                       title: "Active",
-
-                      value:
-                      deviceProvider
-                          .activeDevices
-                          .toString(),
-
-                      icon:
-                      Icons.flash_on,
+                      value: deviceProvider.activeDevices.toString(),
+                      icon: Icons.flash_on,
                     ),
                   ],
                 ),
@@ -558,12 +413,8 @@ class _HomeScreenState
                   children: [
                     StatusCard(
                       title: "Power",
-
-                      value:
-                      "${deviceProvider.currentPowerUsage.toStringAsFixed(0)} W",
-
-                      icon:
-                      Icons.bolt,
+                      value: "${deviceProvider.currentPowerUsage.toStringAsFixed(0)} W",
+                      icon: Icons.bolt,
                     ),
 
                     // ==================================================
@@ -571,21 +422,16 @@ class _HomeScreenState
                     // ==================================================
 
                     _buildAlarmCard(
-                      alarmEnabled:
-                      alarmEnabled,
+                      alarmEnabled: alarmEnabled,
+                      alarmRunning: alarmRunning,
+                      doorOpen: doorOpen,
+                      isConnected: isConnected,
+                      onToggle: () async {
+                        if (!isConnected) {
+                          return;
+                        }
 
-                      doorOpen:
-                      doorOpen,
-
-                      isConnected:
-                      isConnected,
-
-                      onChanged:
-                          (value) {
-                        smartHomeProvider
-                            .setDoorAlarm(
-                          value,
-                        );
+                        await deviceProvider.toggleAlarm();
                       },
                     ),
                   ],
@@ -600,36 +446,19 @@ class _HomeScreenState
                 // ====================================================
 
                 PumpCard(
-                  isRunning:
-                  deviceProvider
-                      .pumpRunning,
-
-                  selectedMinutes:
-                  deviceProvider
-                      .selectedPumpMinutes,
-
-                  remainingTime:
-                  deviceProvider
-                      .formattedRemainingTime,
-
-                  onDurationChanged:
-                      (value) {
+                  isRunning: deviceProvider.pumpRunning,
+                  selectedMinutes: deviceProvider.selectedPumpMinutes,
+                  remainingTime: deviceProvider.formattedRemainingTime,
+                  onDurationChanged: (value) {
                     if (value != null) {
-                      deviceProvider
-                          .changePumpDuration(
-                        value,
-                      );
+                      deviceProvider.changePumpDuration(value);
                     }
                   },
-
                   onStart: () {
-                    deviceProvider
-                        .startPump();
+                    deviceProvider.startPump();
                   },
-
                   onStop: () {
-                    deviceProvider
-                        .stopPump();
+                    deviceProvider.stopPump();
                   },
                 ),
 
@@ -642,16 +471,12 @@ class _HomeScreenState
                 // ====================================================
 
                 const Align(
-                  alignment:
-                  Alignment.centerLeft,
-
+                  alignment: Alignment.centerLeft,
                   child: Text(
                     "Room Overview",
-
                     style: TextStyle(
                       fontSize: 22,
-                      fontWeight:
-                      FontWeight.bold,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
@@ -662,33 +487,15 @@ class _HomeScreenState
 
                 ListView.builder(
                   shrinkWrap: true,
-
-                  physics:
-                  const NeverScrollableScrollPhysics(),
-
-                  itemCount:
-                  roomList.length,
-
-                  itemBuilder:
-                      (context, index) {
-                    final room =
-                    roomList[index];
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: roomList.length,
+                  itemBuilder: (context, index) {
+                    final room = roomList[index];
 
                     return RoomStatusCard(
-                      roomName:
-                      room.name,
-
-                      totalDevices:
-                      deviceProvider
-                          .getDeviceCount(
-                        room.name,
-                      ),
-
-                      activeDevices:
-                      deviceProvider
-                          .getActiveDeviceCount(
-                        room.name,
-                      ),
+                      roomName: room.name,
+                      totalDevices: deviceProvider.getDeviceCount(room.name),
+                      activeDevices: deviceProvider.getActiveDeviceCount(room.name),
                     );
                   },
                 ),
@@ -699,10 +506,7 @@ class _HomeScreenState
 
                 SearchBarWidget(
                   onChanged: (value) {
-                    deviceProvider
-                        .updateSearch(
-                      value,
-                    );
+                    deviceProvider.updateSearch(value);
                   },
                 ),
 
@@ -715,25 +519,13 @@ class _HomeScreenState
                 // ====================================================
 
                 FilterChips(
-                  selected:
-                  deviceProvider
-                      .selectedFilter,
-
-                  onSelected:
-                      (value) {
-                    deviceProvider
-                        .updateFilter(
-                      value,
-                    );
+                  selected: deviceProvider.selectedFilter,
+                  onSelected: (value) {
+                    deviceProvider.updateFilter(value);
                   },
-
-                  showFavoritesOnly:
-                  deviceProvider
-                      .showFavoriteOnly,
-
+                  showFavoritesOnly: deviceProvider.showFavoriteOnly,
                   onFavoriteTap: () {
-                    deviceProvider
-                        .toggleFavoritesFilter();
+                    deviceProvider.toggleFavoritesFilter();
                   },
                 ),
 
@@ -747,33 +539,16 @@ class _HomeScreenState
 
                 GridView.builder(
                   shrinkWrap: true,
-
-                  physics:
-                  const NeverScrollableScrollPhysics(),
-
-                  itemCount:
-                  deviceProvider
-                      .filteredDevices
-                      .length,
-
-                  gridDelegate:
-                  const SliverGridDelegateWithFixedCrossAxisCount(
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: deviceProvider.filteredDevices.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-
                     crossAxisSpacing: 15,
-
                     mainAxisSpacing: 15,
-
-                    childAspectRatio:
-                    0.72,
+                    childAspectRatio: 0.72,
                   ),
-
-                  itemBuilder:
-                      (context, index) {
-                    final device =
-                    deviceProvider
-                        .filteredDevices[
-                    index];
+                  itemBuilder: (context, index) {
+                    final device = deviceProvider.filteredDevices[index];
 
                     debugPrint(
                       "BUILDING DEVICE CARD:"
@@ -783,35 +558,20 @@ class _HomeScreenState
                     );
 
                     return DeviceCard(
-                      deviceName:
-                      device.name,
-
-                      icon: _getIcon(
-                        device.iconName,
-                      ),
-
-                      isOn:
-                      device.isOn,
-
-                      isFavorite:
-                      device.isFavorite,
-
+                      deviceName: device.name,
+                      icon: _getIcon(device.iconName),
+                      isOn: device.isOn,
+                      isFavorite: device.isFavorite,
                       onToggle: () {
-                        deviceProvider
-                            .toggleDevice(
-                          device,
-                        );
+                        deviceProvider.toggleDevice(device);
                       },
-
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) =>
-                                DeviceDetailsScreen(
-                                  device:
-                                  device,
-                                ),
+                            builder: (_) => DeviceDetailsScreen(
+                              device: device,
+                            ),
                           ),
                         );
                       },
@@ -832,12 +592,20 @@ class _HomeScreenState
 
   Widget _buildAlarmCard({
     required bool alarmEnabled,
+    required bool alarmRunning,
     required bool doorOpen,
     required bool isConnected,
-    required ValueChanged<bool> onChanged,
+    required VoidCallback onToggle,
   }) {
-    final bool alertActive =
-        alarmEnabled && doorOpen;
+    // ====================================================
+    // ACTIVE ALARM
+    // ====================================================
+
+    final bool alertActive = alarmEnabled && alarmRunning;
+
+    // ====================================================
+    // STATUS COLOR
+    // ====================================================
 
     Color statusColor;
 
@@ -848,6 +616,10 @@ class _HomeScreenState
     } else {
       statusColor = Colors.grey;
     }
+
+    // ====================================================
+    // STATUS TEXT
+    // ====================================================
 
     String statusText;
 
@@ -861,27 +633,14 @@ class _HomeScreenState
 
     return Expanded(
       child: Container(
-        margin:
-        const EdgeInsets.all(6),
-
-        padding:
-        const EdgeInsets.all(14),
-
-        decoration:
-        BoxDecoration(
-          color:
-          AppColors.cardColor,
-
-          borderRadius:
-          BorderRadius.circular(
-            20,
-          ),
+        margin: const EdgeInsets.all(6),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.cardColor,
+          borderRadius: BorderRadius.circular(20),
         ),
-
         child: Column(
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
-
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ==============================================
             // ICON + TOGGLE
@@ -891,29 +650,16 @@ class _HomeScreenState
               children: [
                 Icon(
                   alertActive
-                      ? Icons
-                      .warning_amber_rounded
+                      ? Icons.warning_amber_rounded
                       : Icons.security_rounded,
-
-                  color:
-                  statusColor,
-
+                  color: statusColor,
                   size: 28,
                 ),
-
                 const Spacer(),
-
                 Switch(
-                  value:
-                  alarmEnabled,
-
-                  onChanged:
-                  isConnected
-                      ? onChanged
-                      : null,
-
-                  activeThumbColor:
-                  AppColors.primary,
+                  value: alarmEnabled,
+                  onChanged: isConnected ? (_) => onToggle() : null,
+                  activeThumbColor: AppColors.primary,
                 ),
               ],
             ),
@@ -928,21 +674,12 @@ class _HomeScreenState
 
             Text(
               statusText,
-
               maxLines: 1,
-
-              overflow:
-              TextOverflow.ellipsis,
-
-              style:
-              TextStyle(
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
                 fontSize: 20,
-
-                fontWeight:
-                FontWeight.bold,
-
-                color:
-                statusColor,
+                fontWeight: FontWeight.bold,
+                color: statusColor,
               ),
             ),
 
@@ -956,18 +693,10 @@ class _HomeScreenState
 
             const Text(
               "Door Alarm",
-
               maxLines: 1,
-
-              overflow:
-              TextOverflow.ellipsis,
-
-              style:
-              TextStyle(
-                color:
-                AppColors
-                    .textSecondary,
-
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: AppColors.textSecondary,
                 fontSize: 12,
               ),
             ),
@@ -981,23 +710,12 @@ class _HomeScreenState
             // ==============================================
 
             Text(
-              doorOpen
-                  ? "Door Open"
-                  : "Door Closed",
-
+              doorOpen ? "Door Open" : "Door Closed",
               maxLines: 1,
-
-              overflow:
-              TextOverflow.ellipsis,
-
-              style:
-              TextStyle(
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
                 fontSize: 11,
-
-                color:
-                doorOpen
-                    ? Colors.red
-                    : Colors.grey,
+                color: doorOpen ? Colors.red : Colors.grey,
               ),
             ),
           ],
@@ -1018,48 +736,30 @@ class _HomeScreenState
     required bool isConnected,
     required DateTime? lastUpdated,
   }) {
-    final bool hasTemperature =
-        temperature != null;
+    final bool hasTemperature = temperature != null;
 
-    final bool hasHumidity =
-        humidity != null;
+    final bool hasHumidity = humidity != null;
 
-    final bool hasDoorStatus =
-        doorStatus.isNotEmpty;
+    final bool hasDoorStatus = doorStatus.isNotEmpty;
 
     return Container(
-      width:
-      double.infinity,
-
-      padding:
-      const EdgeInsets.all(18),
-
-      decoration:
-      BoxDecoration(
-        color:
-        AppColors.cardColor,
-
-        borderRadius:
-        BorderRadius.circular(18),
-
-        border:
-        Border.all(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.cardColor,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
           color: isConnected
-              ? AppColors.primary
-              .withValues(
+              ? AppColors.primary.withValues(
             alpha: 0.20,
           )
-              : Colors.grey
-              .withValues(
+              : Colors.grey.withValues(
             alpha: 0.25,
           ),
         ),
       ),
-
       child: Column(
-        crossAxisAlignment:
-        CrossAxisAlignment.start,
-
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ==================================================
           // HEADER
@@ -1070,27 +770,17 @@ class _HomeScreenState
               Container(
                 width: 42,
                 height: 42,
-
-                decoration:
-                BoxDecoration(
-                  color: AppColors
-                      .primary
-                      .withValues(
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(
                     alpha: 0.12,
                   ),
-
-                  borderRadius:
-                  BorderRadius.circular(
+                  borderRadius: BorderRadius.circular(
                     12,
                   ),
                 ),
-
                 child: Icon(
                   Icons.sensors_rounded,
-
-                  color:
-                  AppColors.primary,
-
+                  color: AppColors.primary,
                   size: 24,
                 ),
               ),
@@ -1101,34 +791,23 @@ class _HomeScreenState
 
               const Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                  CrossAxisAlignment
-                      .start,
-
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       "Home Sensors",
-
-                      style:
-                      TextStyle(
+                      style: TextStyle(
                         fontSize: 17,
-                        fontWeight:
-                        FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-
                     SizedBox(
                       height: 3,
                     ),
-
                     Text(
                       "Live sensor readings",
-
-                      style:
-                      TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color:
-                        Colors.grey,
+                        color: Colors.grey,
                       ),
                     ),
                   ],
@@ -1140,46 +819,28 @@ class _HomeScreenState
               // ============================================
 
               Container(
-                padding:
-                const EdgeInsets
-                    .symmetric(
+                padding: const EdgeInsets.symmetric(
                   horizontal: 8,
                   vertical: 5,
                 ),
-
-                decoration:
-                BoxDecoration(
+                decoration: BoxDecoration(
                   color: isConnected
-                      ? Colors.green
-                      .withValues(
+                      ? Colors.green.withValues(
                     alpha: 0.10,
                   )
-                      : Colors.grey
-                      .withValues(
+                      : Colors.grey.withValues(
                     alpha: 0.10,
                   ),
-
-                  borderRadius:
-                  BorderRadius.circular(
+                  borderRadius: BorderRadius.circular(
                     15,
                   ),
                 ),
-
                 child: Text(
-                  isConnected
-                      ? "LIVE"
-                      : "OFFLINE",
-
-                  style:
-                  TextStyle(
+                  isConnected ? "LIVE" : "OFFLINE",
+                  style: TextStyle(
                     fontSize: 10,
-
-                    fontWeight:
-                    FontWeight.bold,
-
-                    color: isConnected
-                        ? Colors.green
-                        : Colors.grey,
+                    fontWeight: FontWeight.bold,
+                    color: isConnected ? Colors.green : Colors.grey,
                   ),
                 ),
               ),
@@ -1201,21 +862,13 @@ class _HomeScreenState
               // ============================================
 
               Expanded(
-                child:
-                _buildSensorItem(
-                  icon:
-                  Icons.thermostat,
-
-                  title:
-                  "Temperature",
-
-                  value:
-                  hasTemperature
+                child: _buildSensorItem(
+                  icon: Icons.thermostat,
+                  title: "Temperature",
+                  value: hasTemperature
                       ? "${temperature!.toStringAsFixed(1)} °C"
                       : "--",
-
-                  iconColor:
-                  Colors.orange,
+                  iconColor: Colors.orange,
                 ),
               ),
 
@@ -1228,21 +881,13 @@ class _HomeScreenState
               // ============================================
 
               Expanded(
-                child:
-                _buildSensorItem(
-                  icon:
-                  Icons.water_drop,
-
-                  title:
-                  "Humidity",
-
-                  value:
-                  hasHumidity
+                child: _buildSensorItem(
+                  icon: Icons.water_drop,
+                  title: "Humidity",
+                  value: hasHumidity
                       ? "${humidity!.toStringAsFixed(1)} %"
                       : "--",
-
-                  iconColor:
-                  Colors.blue,
+                  iconColor: Colors.blue,
                 ),
               ),
 
@@ -1255,28 +900,17 @@ class _HomeScreenState
               // ============================================
 
               Expanded(
-                child:
-                _buildSensorItem(
+                child: _buildSensorItem(
                   icon: doorOpen
-                      ? Icons
-                      .door_front_door
-                      : Icons
-                      .door_sliding,
-
-                  title:
-                  "Door",
-
-                  value:
-                  hasDoorStatus
+                      ? Icons.door_front_door
+                      : Icons.door_sliding,
+                  title: "Door",
+                  value: hasDoorStatus
                       ? doorOpen
                       ? "Open"
                       : "Closed"
                       : "--",
-
-                  iconColor:
-                  doorOpen
-                      ? Colors.red
-                      : Colors.green,
+                  iconColor: doorOpen ? Colors.red : Colors.green,
                 ),
               ),
             ],
@@ -1290,32 +924,22 @@ class _HomeScreenState
             const SizedBox(
               height: 15,
             ),
-
             Row(
               children: [
                 const Icon(
-                  Icons
-                      .update_rounded,
-
+                  Icons.update_rounded,
                   size: 14,
-
-                  color:
-                  Colors.grey,
+                  color: Colors.grey,
                 ),
-
                 const SizedBox(
                   width: 5,
                 ),
-
                 Text(
                   "Last updated: "
                       "${_formatSensorTime(lastUpdated)}",
-
-                  style:
-                  const TextStyle(
+                  style: const TextStyle(
                     fontSize: 11,
-                    color:
-                    Colors.grey,
+                    color: Colors.grey,
                   ),
                 ),
               ],
@@ -1337,73 +961,47 @@ class _HomeScreenState
     required Color iconColor,
   }) {
     return Container(
-      padding:
-      const EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: 8,
         vertical: 12,
       ),
-
-      decoration:
-      BoxDecoration(
-        color:
-        Colors.grey.withValues(
+      decoration: BoxDecoration(
+        color: Colors.grey.withValues(
           alpha: 0.06,
         ),
-
-        borderRadius:
-        BorderRadius.circular(
+        borderRadius: BorderRadius.circular(
           12,
         ),
       ),
-
       child: Column(
         children: [
           Icon(
             icon,
-
-            color:
-            iconColor,
-
+            color: iconColor,
             size: 25,
           ),
-
           const SizedBox(
             height: 7,
           ),
-
           Text(
             title,
-
             maxLines: 1,
-
-            overflow:
-            TextOverflow.ellipsis,
-
-            style:
-            const TextStyle(
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
               fontSize: 10,
-              color:
-              Colors.grey,
+              color: Colors.grey,
             ),
           ),
-
           const SizedBox(
             height: 4,
           ),
-
           Text(
             value,
-
             maxLines: 1,
-
-            overflow:
-            TextOverflow.ellipsis,
-
-            style:
-            const TextStyle(
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
               fontSize: 14,
-              fontWeight:
-              FontWeight.bold,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],
@@ -1418,23 +1016,13 @@ class _HomeScreenState
   String _formatSensorTime(
       DateTime dateTime,
       ) {
-    final local =
-    dateTime.toLocal();
+    final local = dateTime.toLocal();
 
-    final hour =
-    local.hour % 12 == 0
-        ? 12
-        : local.hour % 12;
+    final hour = local.hour % 12 == 0 ? 12 : local.hour % 12;
 
-    final minute =
-    local.minute
-        .toString()
-        .padLeft(2, "0");
+    final minute = local.minute.toString().padLeft(2, "0");
 
-    final period =
-    local.hour >= 12
-        ? "PM"
-        : "AM";
+    final period = local.hour >= 12 ? "PM" : "AM";
 
     return "$hour:$minute $period";
   }
@@ -1469,6 +1057,12 @@ class _HomeScreenState
 
       case "alarm":
         return Icons.security;
+
+      case "socket":
+        return Icons.power;
+
+      case "appliance":
+        return Icons.devices_other;
 
       default:
         return Icons.devices;
