@@ -866,7 +866,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: Icons.thermostat,
                   title: "Temperature",
                   value: hasTemperature
-                      ? "${temperature!.toStringAsFixed(1)} °C"
+                      ? "${temperature.toStringAsFixed(1)} °C"
                       : "--",
                   iconColor: Colors.orange,
                 ),
@@ -885,7 +885,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: Icons.water_drop,
                   title: "Humidity",
                   value: hasHumidity
-                      ? "${humidity!.toStringAsFixed(1)} %"
+                      ? "${humidity.toStringAsFixed(1)} %"
                       : "--",
                   iconColor: Colors.blue,
                 ),

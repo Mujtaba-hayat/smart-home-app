@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../api/api_service.dart';
@@ -38,12 +38,12 @@ class SmartHomeService {
       },
     );
 
-    print("=================================");
-    print("SMART HOME SERVICE");
-    print("GET CURRENT USER SMART HOME");
-    print("URL: $baseUrl/user/devices");
-    print("STATUS: ${response.statusCode}");
-    print("=================================");
+    debugPrint("=================================");
+    debugPrint("SMART HOME SERVICE");
+    debugPrint("GET CURRENT USER SMART HOME");
+    debugPrint("URL: $baseUrl/user/devices");
+    debugPrint("STATUS: ${response.statusCode}");
+    debugPrint("=================================");
 
     Map<String, dynamic> data = {};
 
@@ -65,8 +65,8 @@ class SmartHomeService {
       final smartHome = data["smartHome"];
 
       if (smartHome == null) {
-        print("SMART HOME: NOT FOUND");
-        print("=================================");
+        debugPrint("SMART HOME: NOT FOUND");
+        debugPrint("=================================");
 
         return null;
       }
@@ -75,48 +75,48 @@ class SmartHomeService {
         smartHome,
       );
 
-      print(
+      debugPrint(
         "SMART HOME NAME: ${home["name"]}",
       );
 
-      print(
+      debugPrint(
         "ESP32 ID: ${home["esp32Id"]}",
       );
 
-      print(
+      debugPrint(
         "ESP32 STATUS: ${home["status"]}",
       );
 
-      print(
+      debugPrint(
         "LAST SEEN: ${home["lastSeen"]}",
       );
 
-      print(
+      debugPrint(
         "TEMPERATURE: ${home["temperature"]}",
       );
 
-      print(
+      debugPrint(
         "HUMIDITY: ${home["humidity"]}",
       );
 
-      print(
+      debugPrint(
         "DOOR STATUS: ${home["doorStatus"]}",
       );
 
-      print(
+      debugPrint(
         "ALARM ENABLED: ${home["alarmEnabled"]}",
       );
 
-      print(
+      debugPrint(
         "ALARM IS ON: ${home["alarmIsOn"]}",
       );
 
-      print(
+      debugPrint(
         "SENSOR LAST UPDATED: "
             "${home["sensorLastUpdated"]}",
       );
 
-      print("=================================");
+      debugPrint("=================================");
 
       return home;
     }
@@ -166,15 +166,15 @@ class SmartHomeService {
       },
     );
 
-    print("=================================");
-    print("LOADING ESP32 CONNECTION STATUS");
-    print("=================================");
+    debugPrint("=================================");
+    debugPrint("LOADING ESP32 CONNECTION STATUS");
+    debugPrint("=================================");
 
-    print(
+    debugPrint(
       "URL: $baseUrl/user/devices",
     );
 
-    print(
+    debugPrint(
       "STATUS: ${response.statusCode}",
     );
 
@@ -209,24 +209,24 @@ class SmartHomeService {
         final connected =
             status == "connected";
 
-        print(
+        debugPrint(
           "SMART HOME: ${smartHome["name"]}",
         );
 
-        print(
+        debugPrint(
           "ESP32 ID: ${esp32Id ?? "null"}",
         );
 
-        print(
+        debugPrint(
           "ESP32 CONNECTED: $connected",
         );
 
-        print(
+        debugPrint(
           "ESP32 STATUS: "
               "${status ?? "disconnected"}",
         );
 
-        print("=================================");
+        debugPrint("=================================");
 
         return {
           "success": true,
@@ -237,8 +237,8 @@ class SmartHomeService {
         };
       }
 
-      print("SMART HOME NOT FOUND");
-      print("=================================");
+      debugPrint("SMART HOME NOT FOUND");
+      debugPrint("=================================");
 
       return {
         "success": false,
@@ -310,12 +310,12 @@ class SmartHomeService {
       },
     );
 
-    print("=================================");
-    print("SENSOR SERVICE");
-    print("GET SENSOR DATA");
-    print("URL: $baseUrl/user/devices");
-    print("STATUS: ${response.statusCode}");
-    print("=================================");
+    debugPrint("=================================");
+    debugPrint("SENSOR SERVICE");
+    debugPrint("GET SENSOR DATA");
+    debugPrint("URL: $baseUrl/user/devices");
+    debugPrint("STATUS: ${response.statusCode}");
+    debugPrint("=================================");
 
     Map<String, dynamic> data = {};
 
@@ -341,8 +341,8 @@ class SmartHomeService {
       final smartHome = data["smartHome"];
 
       if (smartHome is! Map<String, dynamic>) {
-        print("SMART HOME NOT FOUND");
-        print("=================================");
+        debugPrint("SMART HOME NOT FOUND");
+        debugPrint("=================================");
 
         return {
           "success": false,
@@ -373,40 +373,40 @@ class SmartHomeService {
       final alarmIsOn =
           smartHome["alarmIsOn"] == true;
 
-      print(
+      debugPrint(
         "SMART HOME: ${smartHome["name"]}",
       );
 
-      print(
+      debugPrint(
         "ESP32 ID: ${smartHome["esp32Id"]}",
       );
 
-      print(
+      debugPrint(
         "TEMPERATURE: ${temperature ?? "null"} °C",
       );
 
-      print(
+      debugPrint(
         "HUMIDITY: ${humidity ?? "null"} %",
       );
 
-      print(
+      debugPrint(
         "DOOR STATUS: ${doorStatus ?? "null"}",
       );
 
-      print(
+      debugPrint(
         "ALARM ENABLED: $alarmEnabled",
       );
 
-      print(
+      debugPrint(
         "ALARM IS ON: $alarmIsOn",
       );
 
-      print(
+      debugPrint(
         "SENSOR LAST UPDATED: "
             "${sensorLastUpdated ?? "null"}",
       );
 
-      print("=================================");
+      debugPrint("=================================");
 
       return {
         "success": true,
@@ -517,19 +517,19 @@ class SmartHomeService {
       }),
     );
 
-    print("=================================");
-    print("DOOR ALARM SERVICE");
-    print("CONTROL DOOR ALARM");
-    print(
+    debugPrint("=================================");
+    debugPrint("DOOR ALARM SERVICE");
+    debugPrint("CONTROL DOOR ALARM");
+    debugPrint(
       "URL: $baseUrl/user/alarm/control",
     );
-    print(
+    debugPrint(
       "REQUESTED STATE: $state",
     );
-    print(
+    debugPrint(
       "STATUS: ${response.statusCode}",
     );
-    print("=================================");
+    debugPrint("=================================");
 
     Map<String, dynamic> data = {};
 
@@ -555,28 +555,28 @@ class SmartHomeService {
       final alarm = data["alarm"];
 
       if (alarm is Map<String, dynamic>) {
-        print(
+        debugPrint(
           "ALARM NAME: "
               "${alarm["name"]}",
         );
 
-        print(
+        debugPrint(
           "ALARM RELAY: "
               "${alarm["relay"]}",
         );
 
-        print(
+        debugPrint(
           "ALARM ENABLED: "
               "${alarm["enabled"]}",
         );
 
-        print(
+        debugPrint(
           "ALARM IS ON: "
               "${alarm["isOn"]}",
         );
       }
 
-      print("=================================");
+      debugPrint("=================================");
 
       return data;
     }

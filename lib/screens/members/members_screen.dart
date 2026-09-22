@@ -7,13 +7,11 @@ class MembersScreen extends StatefulWidget {
   const MembersScreen({super.key});
 
   @override
-  State<MembersScreen> createState() =>
-      _MembersScreenState();
+  State<MembersScreen> createState() => _MembersScreenState();
 }
 
 class _MembersScreenState extends State<MembersScreen> {
-  final TextEditingController _emailController =
-  TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
 
   @override
   void initState() {
@@ -41,6 +39,7 @@ class _MembersScreenState extends State<MembersScreen> {
 
   Future<void> _showAddMemberDialog() async {
     _emailController.clear();
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     await showDialog(
       context: context,
@@ -67,32 +66,29 @@ class _MembersScreenState extends State<MembersScreen> {
             ),
             ElevatedButton(
               onPressed: () async {
-                final email =
-                _emailController.text.trim();
+                final email = _emailController.text.trim();
 
                 if (email.isEmpty) {
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(
+                  scaffoldMessenger.showSnackBar(
                     const SnackBar(
                       content: Text(
                         "Please enter member email",
                       ),
                     ),
                   );
-
                   return;
                 }
 
                 Navigator.of(dialogContext).pop();
 
-                final provider =
-                Provider.of<MemberProvider>(
+                if (!mounted) return;
+
+                final provider = Provider.of<MemberProvider>(
                   context,
                   listen: false,
                 );
 
-                final success =
-                await provider.addMember(
+                final success = await provider.addMember(
                   email: email,
                   controlDevices: true,
                   controlPump: false,
@@ -101,14 +97,12 @@ class _MembersScreenState extends State<MembersScreen> {
 
                 if (!mounted) return;
 
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(
+                scaffoldMessenger.showSnackBar(
                   SnackBar(
                     content: Text(
                       success
                           ? "Member invitation sent successfully"
-                          : provider.errorMessage ??
-                          "Failed to invite member",
+                          : provider.errorMessage ?? "Failed to invite member",
                     ),
                   ),
                 );
@@ -130,25 +124,19 @@ class _MembersScreenState extends State<MembersScreen> {
       dynamic member,
       ) {
     final name =
-        member["user"]?["name"]?.toString() ??
-            "Unknown User";
+        member["user"]?["name"]?.toString() ?? "Unknown User";
 
     final email =
-        member["user"]?["email"]?.toString() ??
-            "No email";
+        member["user"]?["email"]?.toString() ?? "No email";
 
     final status =
-        member["status"]?.toString() ??
-            "pending";
+        member["status"]?.toString() ?? "pending";
 
-    final controlDevices =
-        member["controlDevices"] == true;
+    final controlDevices = member["controlDevices"] == true;
 
-    final controlPump =
-        member["controlPump"] == true;
+    final controlPump = member["controlPump"] == true;
 
-    final manageMembers =
-        member["manageMembers"] == true;
+    final manageMembers = member["manageMembers"] == true;
 
     return Card(
       margin: const EdgeInsets.only(
@@ -169,15 +157,13 @@ class _MembersScreenState extends State<MembersScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         name,
                         style: const TextStyle(
                           fontSize: 17,
-                          fontWeight:
-                          FontWeight.bold,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -205,8 +191,7 @@ class _MembersScreenState extends State<MembersScreen> {
               child: Text(
                 "Permissions",
                 style: TextStyle(
-                  fontWeight:
-                  FontWeight.bold,
+                  fontWeight: FontWeight.bold,
                   color: Colors.grey.shade700,
                 ),
               ),
@@ -247,8 +232,7 @@ class _MembersScreenState extends State<MembersScreen> {
             // =====================================================
 
             Row(
-              mainAxisAlignment:
-              MainAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton.icon(
                   onPressed: () {
@@ -345,9 +329,7 @@ class _MembersScreenState extends State<MembersScreen> {
         ),
         const SizedBox(height: 2),
         Text(
-          enabled
-              ? "Allowed"
-              : "Disabled",
+          enabled ? "Allowed" : "Disabled",
           style: const TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.bold,
@@ -365,22 +347,20 @@ class _MembersScreenState extends State<MembersScreen> {
       BuildContext context,
       dynamic member,
       ) async {
-    bool controlDevices =
-        member["controlDevices"] == true;
+    bool controlDevices = member["controlDevices"] == true;
 
-    bool controlPump =
-        member["controlPump"] == true;
+    bool controlPump = member["controlPump"] == true;
 
-    bool manageMembers =
-        member["manageMembers"] == true;
+    bool manageMembers = member["manageMembers"] == true;
 
     final memberId =
-        member["_id"]?.toString() ??
-            member["id"]?.toString();
+        member["_id"]?.toString() ?? member["id"]?.toString();
 
     if (memberId == null) {
       return;
     }
+
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     await showDialog(
       context: context,
@@ -395,8 +375,7 @@ class _MembersScreenState extends State<MembersScreen> {
                 "Member Permissions",
               ),
               content: Column(
-                mainAxisSize:
-                MainAxisSize.min,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   SwitchListTile(
                     title: const Text(
@@ -409,7 +388,6 @@ class _MembersScreenState extends State<MembersScreen> {
                       });
                     },
                   ),
-
                   SwitchListTile(
                     title: const Text(
                       "Control Water Pump",
@@ -421,7 +399,6 @@ class _MembersScreenState extends State<MembersScreen> {
                       });
                     },
                   ),
-
                   SwitchListTile(
                     title: const Text(
                       "Manage Members",
@@ -444,35 +421,29 @@ class _MembersScreenState extends State<MembersScreen> {
                   },
                   child: const Text("CANCEL"),
                 ),
-
                 ElevatedButton(
                   onPressed: () async {
                     Navigator.of(
                       dialogContext,
                     ).pop();
 
-                    final provider =
-                    Provider.of<MemberProvider>(
+                    if (!mounted) return;
+
+                    final provider = Provider.of<MemberProvider>(
                       context,
                       listen: false,
                     );
 
-                    final success =
-                    await provider
-                        .updateMemberPermissions(
+                    final success = await provider.updateMemberPermissions(
                       memberId: memberId,
-                      controlDevices:
-                      controlDevices,
-                      controlPump:
-                      controlPump,
-                      manageMembers:
-                      manageMembers,
+                      controlDevices: controlDevices,
+                      controlPump: controlPump,
+                      manageMembers: manageMembers,
                     );
 
                     if (!mounted) return;
 
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(
+                    scaffoldMessenger.showSnackBar(
                       SnackBar(
                         content: Text(
                           success
@@ -497,24 +468,32 @@ class _MembersScreenState extends State<MembersScreen> {
   // REMOVE MEMBER CONFIRMATION
   // =====================================================
 
+  // =====================================================
+  // REMOVE MEMBER CONFIRMATION
+  // =====================================================
+
   Future<void> _confirmRemoveMember(
       BuildContext context,
       dynamic member,
       ) async {
     final memberId =
-        member["_id"]?.toString() ??
-            member["id"]?.toString();
+        member["_id"]?.toString() ?? member["id"]?.toString();
 
     if (memberId == null) {
       return;
     }
 
     final name =
-        member["user"]?["name"]?.toString() ??
-            "this member";
+        member["user"]?["name"]?.toString() ?? "this member";
 
-    final confirmed =
-    await showDialog<bool>(
+    // Capture references before any async gap / dialog navigation
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final provider = Provider.of<MemberProvider>(
+      context,
+      listen: false,
+    );
+
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
@@ -535,10 +514,8 @@ class _MembersScreenState extends State<MembersScreen> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor:
-                Colors.red,
-                foregroundColor:
-                Colors.white,
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
               ),
               onPressed: () {
                 Navigator.of(
@@ -556,34 +533,22 @@ class _MembersScreenState extends State<MembersScreen> {
       return;
     }
 
-    if (!mounted) return;
-
-    final provider =
-    Provider.of<MemberProvider>(
-      context,
-      listen: false,
-    );
-
-    final success =
-    await provider.removeMember(
+    final success = await provider.removeMember(
       memberId,
     );
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
+    scaffoldMessenger.showSnackBar(
       SnackBar(
         content: Text(
           success
               ? "Member removed successfully"
-              : provider.errorMessage ??
-              "Failed to remove member",
+              : provider.errorMessage ?? "Failed to remove member",
         ),
       ),
     );
   }
-
   // =====================================================
   // BUILD
   // =====================================================
@@ -610,7 +575,6 @@ class _MembersScreenState extends State<MembersScreen> {
           ),
         ],
       ),
-
       body: Consumer<MemberProvider>(
         builder: (
             context,
@@ -622,8 +586,7 @@ class _MembersScreenState extends State<MembersScreen> {
           // =====================================================
 
           final canManageMembers =
-              provider.isOwner ||
-                  provider.canManageMembers;
+              provider.isOwner || provider.canManageMembers;
 
           // =====================================================
           // LOADING
@@ -631,8 +594,7 @@ class _MembersScreenState extends State<MembersScreen> {
 
           if (provider.isLoading) {
             return const Center(
-              child:
-              CircularProgressIndicator(),
+              child: CircularProgressIndicator(),
             );
           }
 
@@ -643,43 +605,33 @@ class _MembersScreenState extends State<MembersScreen> {
           if (!canManageMembers) {
             return Center(
               child: Padding(
-                padding:
-                const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(24),
                 child: Column(
-                  mainAxisSize:
-                  MainAxisSize.min,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
                       Icons.lock_outline,
                       size: 60,
-                      color:
-                      Colors.grey.shade600,
+                      color: Colors.grey.shade600,
                     ),
-
                     const SizedBox(
                       height: 15,
                     ),
-
                     const Text(
                       "Access Restricted",
                       style: TextStyle(
                         fontSize: 20,
-                        fontWeight:
-                        FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-
                     const SizedBox(
                       height: 8,
                     ),
-
                     Text(
                       "You do not have permission to manage Smart Home members.",
-                      textAlign:
-                      TextAlign.center,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
-                        color:
-                        Colors.grey.shade600,
+                        color: Colors.grey.shade600,
                       ),
                     ),
                   ],
@@ -692,35 +644,27 @@ class _MembersScreenState extends State<MembersScreen> {
           // ERROR
           // =====================================================
 
-          if (provider.errorMessage != null &&
-              provider.members.isEmpty) {
+          if (provider.errorMessage != null && provider.members.isEmpty) {
             return Center(
               child: Padding(
-                padding:
-                const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(24),
                 child: Column(
-                  mainAxisSize:
-                  MainAxisSize.min,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(
                       Icons.error_outline,
                       size: 50,
                     ),
-
                     const SizedBox(
                       height: 12,
                     ),
-
                     Text(
                       provider.errorMessage!,
-                      textAlign:
-                      TextAlign.center,
+                      textAlign: TextAlign.center,
                     ),
-
                     const SizedBox(
                       height: 15,
                     ),
-
                     ElevatedButton(
                       onPressed: () {
                         provider.loadMembers();
@@ -741,40 +685,32 @@ class _MembersScreenState extends State<MembersScreen> {
 
           if (provider.members.isEmpty) {
             return RefreshIndicator(
-              onRefresh:
-              provider.loadMembers,
+              onRefresh: provider.loadMembers,
               child: ListView(
-                physics:
-                const AlwaysScrollableScrollPhysics(),
+                physics: const AlwaysScrollableScrollPhysics(),
                 children: const [
                   SizedBox(
                     height: 150,
                   ),
-
                   Icon(
                     Icons.group_outlined,
                     size: 70,
                   ),
-
                   SizedBox(
                     height: 15,
                   ),
-
                   Center(
                     child: Text(
                       "No members yet",
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight:
-                        FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-
                   SizedBox(
                     height: 8,
                   ),
-
                   Center(
                     child: Text(
                       "Invite someone to your Smart Home",
@@ -790,45 +726,36 @@ class _MembersScreenState extends State<MembersScreen> {
           // =====================================================
 
           return RefreshIndicator(
-            onRefresh:
-            provider.loadMembers,
+            onRefresh: provider.loadMembers,
             child: ListView(
-              padding:
-              const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               children: [
                 Card(
                   child: ListTile(
-                    leading:
-                    const CircleAvatar(
+                    leading: const CircleAvatar(
                       child: Icon(
                         Icons.group,
                       ),
                     ),
-
                     title: const Text(
                       "Smart Home Members",
                       style: TextStyle(
-                        fontWeight:
-                        FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-
                     subtitle: Text(
                       "${provider.members.length} member${provider.members.length == 1 ? '' : 's'}",
                     ),
                   ),
                 ),
-
                 const SizedBox(
                   height: 15,
                 ),
-
                 ...provider.members.map(
-                      (member) =>
-                      _buildMemberCard(
-                        context,
-                        member,
-                      ),
+                      (member) => _buildMemberCard(
+                    context,
+                    member,
+                  ),
                 ),
               ],
             ),
@@ -841,24 +768,21 @@ class _MembersScreenState extends State<MembersScreen> {
       // ONLY OWNER / AUTHORIZED MEMBER
       // =====================================================
 
-      floatingActionButton:
-      Consumer<MemberProvider>(
+      floatingActionButton: Consumer<MemberProvider>(
         builder: (
             context,
             provider,
             child,
             ) {
           final canManageMembers =
-              provider.isOwner ||
-                  provider.canManageMembers;
+              provider.isOwner || provider.canManageMembers;
 
           if (!canManageMembers) {
             return const SizedBox.shrink();
           }
 
           return FloatingActionButton(
-            onPressed:
-            _showAddMemberDialog,
+            onPressed: _showAddMemberDialog,
             child: const Icon(
               Icons.person_add,
             ),
